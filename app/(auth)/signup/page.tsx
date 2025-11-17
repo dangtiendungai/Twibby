@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Checkbox from "../components/Checkbox";
+import Checkbox from "../../components/Checkbox";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -15,18 +15,18 @@ export default function SignupPage() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     // Validate passwords match
     if (password !== confirmPassword) {
       setPasswordError("Passwords do not match");
       return;
     }
-
+    
     if (password.length < 8) {
       setPasswordError("Password must be at least 8 characters");
       return;
     }
-
+    
     setPasswordError("");
     setIsLoading(true);
     // TODO: Implement Supabase auth
@@ -43,9 +43,7 @@ export default function SignupPage() {
     }
   };
 
-  const handleConfirmPasswordChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setConfirmPassword(e.target.value);
     if (e.target.value !== password) {
       setPasswordError("Passwords do not match");
@@ -229,3 +227,4 @@ export default function SignupPage() {
     </div>
   );
 }
+

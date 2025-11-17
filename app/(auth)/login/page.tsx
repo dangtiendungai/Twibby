@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Checkbox from "../components/Checkbox";
+import Checkbox from "../../components/Checkbox";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -98,12 +98,12 @@ export default function LoginPage() {
                 />
 
                 <div className="text-sm">
-                  <a
-                    href="#"
+                  <Link
+                    href="/forgot-password"
                     className="font-medium text-blue-500 hover:text-blue-600"
                   >
                     Forgot password?
-                  </a>
+                  </Link>
                 </div>
               </div>
 
