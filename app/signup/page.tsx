@@ -7,16 +7,49 @@ import Checkbox from "../components/Checkbox";
 export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [username, setUsername] = useState("");
   const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate passwords match
+    if (password !== confirmPassword) {
+      setPasswordError("Passwords do not match");
+      return;
+    }
+    
+    if (password.length < 8) {
+      setPasswordError("Password must be at least 8 characters");
+      return;
+    }
+    
+    setPasswordError("");
     setIsLoading(true);
     // TODO: Implement Supabase auth
     console.log("Signup:", { email, password, username, name });
     setTimeout(() => setIsLoading(false), 1000);
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value);
+    if (confirmPassword && e.target.value !== confirmPassword) {
+      setPasswordError("Passwords do not match");
+    } else {
+      setPasswordError("");
+    }
+  };
+
+  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setConfirmPassword(e.target.value);
+    if (e.target.value !== password) {
+      setPasswordError("Passwords do not match");
+    } else {
+      setPasswordError("");
+    }
   };
 
   return (
