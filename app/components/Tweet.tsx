@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Heart, MessageCircle, Repeat2 } from "lucide-react";
 
 interface TweetProps {
   id: string;
@@ -77,15 +78,15 @@ export default function Tweet({
                 liked ? "text-red-500" : ""
               }`}
             >
-              <span className="text-xl">{liked ? "❤️" : "🤍"}</span>
+              <Heart className={`w-5 h-5 ${liked ? "fill-current" : ""}`} />
               <span className="text-sm">{likeCount}</span>
             </button>
             <button className="flex items-center gap-2 hover:text-blue-500 transition-colors">
-              <span className="text-xl">💬</span>
+              <MessageCircle className="w-5 h-5" />
               <span className="text-sm">0</span>
             </button>
             <button className="flex items-center gap-2 hover:text-blue-500 transition-colors">
-              <span className="text-xl">🔄</span>
+              <Repeat2 className="w-5 h-5" />
             </button>
           </div>
         </div>

@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Home, Search, User, Plus } from "lucide-react";
 
 const navigation = [
-  { name: "Home", href: "/", icon: "🏠" },
-  { name: "Explore", href: "/explore", icon: "🔍" },
-  { name: "Profile", href: "/profile", icon: "👤" },
+  { name: "Home", href: "/", icon: Home },
+  { name: "Explore", href: "/explore", icon: Search },
+  { name: "Profile", href: "/profile", icon: User },
 ];
 
 export default function Sidebar() {
@@ -34,7 +35,7 @@ export default function Sidebar() {
                     : "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
                 }`}
               >
-                <span className="text-xl">{item.icon}</span>
+                <item.icon className="w-6 h-6" />
                 <span className="text-base sm:text-lg hidden sm:inline">{item.name}</span>
               </Link>
             );
@@ -42,9 +43,9 @@ export default function Sidebar() {
         </nav>
 
         <div className="mt-auto px-2">
-          <button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 sm:px-6 rounded-full transition-colors text-sm sm:text-base">
+          <button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 sm:px-6 rounded-full transition-colors text-sm sm:text-base flex items-center justify-center gap-2">
             <span className="hidden sm:inline">Post</span>
-            <span className="sm:hidden">+</span>
+            <Plus className="w-5 h-5 sm:hidden" />
           </button>
         </div>
       </div>
