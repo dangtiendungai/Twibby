@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Checkbox from "../components/Checkbox";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -125,27 +126,24 @@ export default function SignupPage() {
               </p>
             </div>
 
-            <div className="flex items-center">
-              <input
+            <div>
+              <Checkbox
                 id="terms"
                 name="terms"
-                type="checkbox"
                 required
-                className="h-4 w-4 text-blue-500 focus:ring-blue-500 border-gray-300 rounded"
+                label={
+                  <>
+                    I agree to the{" "}
+                    <a href="#" className="text-blue-500 hover:text-blue-600">
+                      Terms of Service
+                    </a>{" "}
+                    and{" "}
+                    <a href="#" className="text-blue-500 hover:text-blue-600">
+                      Privacy Policy
+                    </a>
+                  </>
+                }
               />
-              <label
-                htmlFor="terms"
-                className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
-              >
-                I agree to the{" "}
-                <a href="#" className="text-blue-500 hover:text-blue-600">
-                  Terms of Service
-                </a>{" "}
-                and{" "}
-                <a href="#" className="text-blue-500 hover:text-blue-600">
-                  Privacy Policy
-                </a>
-              </label>
             </div>
 
             <div>
@@ -163,4 +161,3 @@ export default function SignupPage() {
     </div>
   );
 }
-

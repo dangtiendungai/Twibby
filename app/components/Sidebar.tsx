@@ -17,7 +17,10 @@ export default function Sidebar() {
     <aside className="sticky top-0 h-screen w-[240px] flex-shrink-0 border-r border-gray-200 dark:border-gray-800 px-2 sm:px-4 py-6">
       <div className="flex flex-col h-full">
         <div className="mb-8 px-2">
-          <Link href="/" className="text-xl sm:text-2xl font-bold text-blue-500">
+          <Link
+            href="/"
+            className="text-xl sm:text-2xl font-bold text-blue-500"
+          >
             Twibby
           </Link>
         </div>
@@ -36,20 +39,28 @@ export default function Sidebar() {
                 }`}
               >
                 <item.icon className="w-6 h-6" />
-                <span className="text-base sm:text-lg hidden sm:inline">{item.name}</span>
+                <span className="text-base sm:text-lg hidden sm:inline">
+                  {item.name}
+                </span>
               </Link>
             );
           })}
         </nav>
 
-        <div className="mt-auto px-2">
+        <div className="mt-auto px-2 space-y-2">
           <button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 sm:px-6 rounded-full transition-colors text-sm sm:text-base flex items-center justify-center gap-2">
             <span className="hidden sm:inline">Post</span>
             <Plus className="w-5 h-5 sm:hidden" />
           </button>
+          <Link
+            href="/login"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-colors text-sm sm:text-base"
+          >
+            <span className="hidden sm:inline">Sign In</span>
+            <span className="sm:hidden">Sign In</span>
+          </Link>
         </div>
       </div>
     </aside>
   );
 }
-
