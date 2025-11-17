@@ -1,0 +1,96 @@
+"use client";
+
+import { useState } from "react";
+
+interface TweetProps {
+  id: string;
+  content: string;
+  author: {
+    username: string;
+    name: string;
+    avatar?: string;
+  };
+  createdAt: string;
+  likes: number;
+  isLiked?: boolean;
+  onLike?: (id: string) => void;
+}
+
+export default function Tweet({
+  id,
+  content,
+  author,
+  createdAt,
+  likes,
+  isLiked = false,
+  onLike,
+}: TweetProps) {
+  const [liked, setLiked] = useState(isLiked);
+  const [likeCount, setLikeCount] = useState(likes);
+
+  const handleLike = () => {
+    const newLiked = !liked;
+    setLiked(newLiked);
+    setLikeCount((prev) => (newLiked ? prev + 1 : prev - 1));
+    onLike?.(id);
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (minutes < 1) return "now";
+    if (minutes < 60) return `${minutes}m`;
+    if (hours < 24) return `${hours}h`;
+    if (days < 7) return `${days}d`;
+    return date.toLocaleDateString();
+  };
+
+  return (
+    <article className="border-b border-gray-200 dark:border-gray-800 p-4 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+      <div className="flex gap-3">
+        <div className="w-12 h-12 rounded-full bg-gray-300 dark:bg-gray-700 flex-shrink-0"></div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-semibold text-gray-900 dark:text-gray-100">
+              {author.name}
+            </span>
+            <span className="text-gray-500 dark:text-gray-400">
+              @{author.username}
+            </span>
+            <span className="text-gray-500 dark:text-gray-400">·</span>
+            <span className="text-gray-500 dark:text-gray-400 text-sm">
+              {formatDate(createdAt)}
+            </span>
+          </div>
+          <p className="text-gray-900 dark:text-gray-100 mb-3 whitespace-pre-wrap break-words">
+            {content}
+          </p>
+          <div className="flex items-center gap-6 text-gray-500 dark:text-gray-400">
+            <button
+              onClick={handleLike}
+              className={`flex items-center gap-2 hover:text-red-500 transition-colors ${
+                liked ? "text-red-500" : ""
+              }`}
+            >
+              <span className="text-xl">{liked ? "❤️" : "🤍"}</span>
+              <span className="text-sm">{likeCount}</span>
+            </button>
+            <button className="flex items-center gap-2 hover:text-blue-500 transition-colors">
+              <span className="text-xl">💬</span>
+              <span className="text-sm">0</span>
+            </button>
+            <button className="flex items-center gap-2 hover:text-blue-500 transition-colors">
+              <span className="text-xl">🔄</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+}
+

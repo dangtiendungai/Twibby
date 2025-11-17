@@ -1,6 +1,5 @@
-import Sidebar from "./components/Sidebar";
-import TweetComposer from "./components/TweetComposer";
-import Tweet from "./components/Tweet";
+import Sidebar from "../components/Sidebar";
+import Tweet from "../components/Tweet";
 
 // Mock data - will be replaced with Supabase data later
 const mockTweets = [
@@ -37,19 +36,29 @@ const mockTweets = [
     likes: 67,
     isLiked: false,
   },
+  {
+    id: "4",
+    content: "The best way to learn is by building. Start small, iterate, and keep shipping! 💪",
+    author: {
+      username: "codeguru",
+      name: "Code Guru",
+    },
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 8).toISOString(),
+    likes: 203,
+    isLiked: false,
+  },
 ];
 
-export default function Home() {
+export default function ExplorePage() {
   return (
     <div className="flex min-h-screen bg-white dark:bg-black">
       <Sidebar />
       <main className="flex-1 border-x border-gray-200 dark:border-gray-800 max-w-2xl w-full">
         <div className="sticky top-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 px-4 py-4 z-10">
           <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-            Home
+            Explore
           </h2>
         </div>
-        <TweetComposer />
         <div>
           {mockTweets.map((tweet) => (
             <Tweet
@@ -68,25 +77,20 @@ export default function Home() {
         <div className="sticky top-4">
           <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 mb-4">
             <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100 mb-4">
-              Who to follow
+              Trending
             </h3>
             <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-gray-300 dark:bg-gray-700"></div>
-                    <div>
-                      <p className="font-semibold text-gray-900 dark:text-gray-100">
-                        User {i}
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        @user{i}
-                      </p>
-                    </div>
-                  </div>
-                  <button className="bg-black dark:bg-white text-white dark:text-black px-4 py-1.5 rounded-full text-sm font-semibold hover:opacity-80 transition-opacity">
-                    Follow
-                  </button>
+              {["#webdev", "#nextjs", "#supabase", "#react"].map((tag) => (
+                <div
+                  key={tag}
+                  className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded-lg transition-colors"
+                >
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">
+                    {tag}
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Trending in Technology
+                  </p>
                 </div>
               ))}
             </div>
@@ -96,3 +100,4 @@ export default function Home() {
     </div>
   );
 }
+
