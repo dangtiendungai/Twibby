@@ -14,7 +14,7 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="sticky top-0 h-screen border-r border-gray-200 dark:border-gray-800 px-2 sm:px-4 py-6">
+    <aside className="sticky top-0 h-screen w-[240px] flex-shrink-0 border-r border-gray-200 dark:border-gray-800 px-2 sm:px-4 py-6">
       <div className="flex flex-col h-full">
         <div className="mb-8 px-2">
           <Link href="/" className="text-xl sm:text-2xl font-bold text-blue-500">

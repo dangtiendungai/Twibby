@@ -1,5 +1,4 @@
-import Sidebar from "../components/Sidebar";
-import Tweet from "../components/Tweet";
+import Tweet from "../../components/Tweet";
 
 // Mock data - will be replaced with Supabase data later
 const mockTweets = [
@@ -51,9 +50,8 @@ const mockTweets = [
 
 export default function ExplorePage() {
   return (
-    <div className="flex min-h-screen bg-white dark:bg-black">
-      <Sidebar />
-      <main className="flex-1 border-x border-gray-200 dark:border-gray-800 max-w-2xl w-full">
+    <>
+      <main className="flex-1 border-x border-gray-200 dark:border-gray-800 min-w-0">
         <div className="sticky top-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 px-4 py-4 z-10">
           <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
             Explore
@@ -73,7 +71,7 @@ export default function ExplorePage() {
           ))}
         </div>
       </main>
-      <aside className="hidden lg:block w-80 p-4">
+      <aside className="hidden lg:block w-80 flex-shrink-0 p-4">
         <div className="sticky top-4">
           <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 mb-4">
             <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100 mb-4">
@@ -97,7 +95,7 @@ export default function ExplorePage() {
           </div>
         </div>
       </aside>
-    </div>
+    </>
   );
 }
 

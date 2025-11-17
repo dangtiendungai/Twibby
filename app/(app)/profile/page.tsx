@@ -1,6 +1,5 @@
-import Sidebar from "../components/Sidebar";
-import ProfileCard from "../components/ProfileCard";
-import Tweet from "../components/Tweet";
+import ProfileCard from "../../components/ProfileCard";
+import Tweet from "../../components/Tweet";
 
 // Mock data - will be replaced with Supabase data later
 const mockProfile = {
@@ -16,7 +15,8 @@ const mockProfile = {
 const mockTweets = [
   {
     id: "1",
-    content: "Just launched my new project! Excited to share it with everyone. 🚀",
+    content:
+      "Just launched my new project! Excited to share it with everyone. 🚀",
     author: {
       username: "johndoe",
       name: "John Doe",
@@ -27,7 +27,8 @@ const mockTweets = [
   },
   {
     id: "2",
-    content: "Beautiful sunset today! Sometimes you just need to stop and appreciate the little things in life. 🌅",
+    content:
+      "Beautiful sunset today! Sometimes you just need to stop and appreciate the little things in life. 🌅",
     author: {
       username: "johndoe",
       name: "John Doe",
@@ -40,9 +41,8 @@ const mockTweets = [
 
 export default function ProfilePage() {
   return (
-    <div className="flex min-h-screen bg-white dark:bg-black">
-      <Sidebar />
-      <main className="flex-1 border-x border-gray-200 dark:border-gray-800 max-w-2xl w-full">
+    <>
+      <main className="flex-1 border-x border-gray-200 dark:border-gray-800 min-w-0">
         <ProfileCard
           username={mockProfile.username}
           name={mockProfile.name}
@@ -82,7 +82,7 @@ export default function ProfilePage() {
           ))}
         </div>
       </main>
-      <aside className="hidden lg:block w-80 p-4">
+      <aside className="hidden lg:block w-80 flex-shrink-0 p-4">
         <div className="sticky top-4">
           <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4">
             <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100 mb-4">
@@ -90,7 +90,10 @@ export default function ProfilePage() {
             </h3>
             <div className="space-y-4">
               {["#webdev", "#nextjs", "#supabase"].map((tag) => (
-                <div key={tag} className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded-lg transition-colors">
+                <div
+                  key={tag}
+                  className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded-lg transition-colors"
+                >
                   <p className="font-semibold text-gray-900 dark:text-gray-100">
                     {tag}
                   </p>
@@ -103,7 +106,6 @@ export default function ProfilePage() {
           </div>
         </div>
       </aside>
-    </div>
+    </>
   );
 }
-
