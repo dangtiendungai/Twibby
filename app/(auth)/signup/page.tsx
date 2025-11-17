@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import Checkbox from "../../components/Checkbox";
+import Button from "../../components/Button";
+import TextField from "../../components/TextField";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -15,18 +17,18 @@ export default function SignupPage() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate passwords match
     if (password !== confirmPassword) {
       setPasswordError("Passwords do not match");
       return;
     }
-    
+
     if (password.length < 8) {
       setPasswordError("Password must be at least 8 characters");
       return;
     }
-    
+
     setPasswordError("");
     setIsLoading(true);
     // TODO: Implement Supabase auth
@@ -43,7 +45,9 @@ export default function SignupPage() {
     }
   };
 
-  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleConfirmPasswordChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setConfirmPassword(e.target.value);
     if (e.target.value !== password) {
       setPasswordError("Passwords do not match");
@@ -75,122 +79,66 @@ export default function SignupPage() {
 
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-gray-800">
           <form className="space-y-6" onSubmit={handleSignup}>
-            <div>
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-              >
-                Full Name
-              </label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                placeholder="John Doe"
-              />
-            </div>
+            <TextField
+              id="name"
+              name="name"
+              type="text"
+              label="Full Name"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="John Doe"
+            />
 
-            <div>
-              <label
-                htmlFor="username"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-              >
-                Username
-              </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                placeholder="johndoe"
-              />
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                This will be your unique handle on Twibby
-              </p>
-            </div>
+            <TextField
+              id="username"
+              name="username"
+              type="text"
+              label="Username"
+              required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="johndoe"
+              helperText="This will be your unique handle on Twibby"
+            />
 
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-              >
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                placeholder="you@example.com"
-              />
-            </div>
+            <TextField
+              id="email"
+              name="email"
+              type="email"
+              label="Email address"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+            />
 
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={password}
-                onChange={handlePasswordChange}
-                className={`w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition ${
-                  passwordError
-                    ? "border-red-500 dark:border-red-500"
-                    : "border-gray-300 dark:border-gray-700"
-                }`}
-                placeholder="••••••••"
-              />
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Must be at least 8 characters
-              </p>
-            </div>
+            <TextField
+              id="password"
+              name="password"
+              type="password"
+              label="Password"
+              autoComplete="new-password"
+              required
+              value={password}
+              onChange={handlePasswordChange}
+              placeholder="••••••••"
+              helperText="Must be at least 8 characters"
+            />
 
-            <div>
-              <label
-                htmlFor="confirmPassword"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-              >
-                Confirm Password
-              </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={confirmPassword}
-                onChange={handleConfirmPasswordChange}
-                className={`w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition ${
-                  passwordError
-                    ? "border-red-500 dark:border-red-500"
-                    : "border-gray-300 dark:border-gray-700"
-                }`}
-                placeholder="••••••••"
-              />
-              {passwordError && (
-                <p className="mt-1 text-xs text-red-600 dark:text-red-400">
-                  {passwordError}
-                </p>
-              )}
-            </div>
+            <TextField
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              label="Confirm Password"
+              autoComplete="new-password"
+              required
+              value={confirmPassword}
+              onChange={handleConfirmPasswordChange}
+              placeholder="••••••••"
+              error={passwordError}
+            />
 
             <div>
               <Checkbox
@@ -212,19 +160,12 @@ export default function SignupPage() {
               />
             </div>
 
-            <div>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {isLoading ? "Creating account..." : "Create account"}
-              </button>
-            </div>
+            <Button type="submit" fullWidth isLoading={isLoading}>
+              Create account
+            </Button>
           </form>
         </div>
       </div>
     </div>
   );
 }
-

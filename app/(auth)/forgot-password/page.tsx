@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Button from "../../components/Button";
+import TextField from "../../components/TextField";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -37,38 +39,26 @@ export default function ForgotPasswordPage() {
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-gray-800">
           {!isSubmitted ? (
             <form className="space-y-6" onSubmit={handleSubmit}>
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  Email address
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                  placeholder="you@example.com"
-                />
-                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                  Enter your email address and we'll send you a link to reset your password.
-                </p>
-              </div>
+              <TextField
+                id="email"
+                name="email"
+                type="email"
+                label="Email address"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                helperText="Enter your email address and we'll send you a link to reset your password."
+              />
 
-              <div>
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {isLoading ? "Sending..." : "Send reset link"}
-                </button>
-              </div>
+              <Button
+                type="submit"
+                fullWidth
+                isLoading={isLoading}
+              >
+                Send reset link
+              </Button>
 
               <div className="text-center">
                 <Link
@@ -108,15 +98,16 @@ export default function ForgotPasswordPage() {
                 </p>
               </div>
               <div className="space-y-3">
-                <button
+                <Button
+                  variant="outline"
+                  fullWidth
                   onClick={() => {
                     setIsSubmitted(false);
                     setEmail("");
                   }}
-                  className="w-full flex justify-center py-3 px-4 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   Resend email
-                </button>
+                </Button>
                 <Link
                   href="/login"
                   className="block text-sm font-medium text-blue-500 hover:text-blue-600"
@@ -131,4 +122,3 @@ export default function ForgotPasswordPage() {
     </div>
   );
 }
-

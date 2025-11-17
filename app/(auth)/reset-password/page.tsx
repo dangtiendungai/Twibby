@@ -3,6 +3,8 @@
 import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import Button from "../../components/Button";
+import TextField from "../../components/TextField";
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
@@ -94,11 +96,10 @@ function ResetPasswordForm() {
                   You can now sign in with your new password.
                 </p>
               </div>
-              <Link
-                href="/login"
-                className="block w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 transition-colors"
-              >
-                Go to login
+              <Link href="/login">
+                <Button fullWidth>
+                  Go to login
+                </Button>
               </Link>
             </div>
           </div>
@@ -124,71 +125,40 @@ function ResetPasswordForm() {
 
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-gray-800">
           <form className="space-y-6" onSubmit={handleSubmit}>
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-              >
-                New Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={password}
-                onChange={handlePasswordChange}
-                className={`w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition ${
-                  passwordError
-                    ? "border-red-500 dark:border-red-500"
-                    : "border-gray-300 dark:border-gray-700"
-                }`}
-                placeholder="••••••••"
-              />
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Must be at least 8 characters
-              </p>
-            </div>
+            <TextField
+              id="password"
+              name="password"
+              type="password"
+              label="New Password"
+              autoComplete="new-password"
+              required
+              value={password}
+              onChange={handlePasswordChange}
+              placeholder="••••••••"
+              helperText="Must be at least 8 characters"
+            />
 
-            <div>
-              <label
-                htmlFor="confirmPassword"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-              >
-                Confirm New Password
-              </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={confirmPassword}
-                onChange={handleConfirmPasswordChange}
-                className={`w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition ${
-                  passwordError
-                    ? "border-red-500 dark:border-red-500"
-                    : "border-gray-300 dark:border-gray-700"
-                }`}
-                placeholder="••••••••"
-              />
-              {passwordError && (
-                <p className="mt-1 text-xs text-red-600 dark:text-red-400">
-                  {passwordError}
-                </p>
-              )}
-            </div>
+            <TextField
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              label="Confirm New Password"
+              autoComplete="new-password"
+              required
+              value={confirmPassword}
+              onChange={handleConfirmPasswordChange}
+              placeholder="••••••••"
+              error={passwordError}
+            />
 
-            <div>
-              <button
-                type="submit"
-                disabled={isLoading || !token}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {isLoading ? "Resetting password..." : "Reset password"}
-              </button>
-            </div>
+            <Button
+              type="submit"
+              fullWidth
+              isLoading={isLoading}
+              disabled={!token}
+            >
+              Reset password
+            </Button>
 
             <div className="text-center">
               <Link
