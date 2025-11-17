@@ -15,18 +15,18 @@ export default function SignupPage() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate passwords match
     if (password !== confirmPassword) {
       setPasswordError("Passwords do not match");
       return;
     }
-    
+
     if (password.length < 8) {
       setPasswordError("Password must be at least 8 characters");
       return;
     }
-    
+
     setPasswordError("");
     setIsLoading(true);
     // TODO: Implement Supabase auth
@@ -43,7 +43,9 @@ export default function SignupPage() {
     }
   };
 
-  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleConfirmPasswordChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setConfirmPassword(e.target.value);
     if (e.target.value !== password) {
       setPasswordError("Passwords do not match");
@@ -150,13 +152,46 @@ export default function SignupPage() {
                 autoComplete="new-password"
                 required
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                onChange={handlePasswordChange}
+                className={`w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition ${
+                  passwordError
+                    ? "border-red-500 dark:border-red-500"
+                    : "border-gray-300 dark:border-gray-700"
+                }`}
                 placeholder="••••••••"
               />
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 Must be at least 8 characters
               </p>
+            </div>
+
+            <div>
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
+                Confirm Password
+              </label>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                autoComplete="new-password"
+                required
+                value={confirmPassword}
+                onChange={handleConfirmPasswordChange}
+                className={`w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition ${
+                  passwordError
+                    ? "border-red-500 dark:border-red-500"
+                    : "border-gray-300 dark:border-gray-700"
+                }`}
+                placeholder="••••••••"
+              />
+              {passwordError && (
+                <p className="mt-1 text-xs text-red-600 dark:text-red-400">
+                  {passwordError}
+                </p>
+              )}
             </div>
 
             <div>
