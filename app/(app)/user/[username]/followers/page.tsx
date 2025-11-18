@@ -1,5 +1,6 @@
 import Sidebar from "../../../../components/Sidebar";
 import Link from "next/link";
+import Button from "../../../../components/Button";
 
 // Mock data
 const mockFollowers = [
@@ -78,15 +79,19 @@ export default function FollowersPage({ params }: FollowersPageProps) {
                     )}
                   </div>
                 </Link>
-                <button
-                  className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors cursor-pointer ${
-                    user.isFollowing
-                      ? "bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
-                      : "bg-black dark:bg-white text-white dark:text-black hover:opacity-80"
+                <Button
+                  variant="fill"
+                  color={user.isFollowing ? "gray" : "primary"}
+                  rounded="full"
+                  size="sm"
+                  className={`font-semibold ${
+                    !user.isFollowing
+                      ? "bg-black dark:bg-white text-white dark:text-black hover:opacity-80"
+                      : ""
                   }`}
                 >
                   {user.isFollowing ? "Following" : "Follow"}
-                </button>
+                </Button>
               </div>
             </div>
           ))}

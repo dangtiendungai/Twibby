@@ -1,5 +1,6 @@
 import ProfileCard from "../../components/ProfileCard";
 import Tweet from "../../components/Tweet";
+import Button from "../../components/Button";
 
 // Mock data - will be replaced with Supabase data later
 const mockProfile = {
@@ -54,18 +55,38 @@ export default function ProfilePage() {
         />
         <div className="border-b border-gray-200 dark:border-gray-800">
           <div className="flex">
-            <button className="flex-1 py-4 px-4 text-center font-semibold text-gray-900 dark:text-gray-100 border-b-2 border-blue-500 cursor-pointer">
+            <Button
+              variant="text"
+              color="gray"
+              rounded="none"
+              className="flex-1 py-4 px-4 text-center font-semibold text-gray-900 dark:text-gray-100 border-b-2 border-blue-500"
+            >
               Posts
-            </button>
-            <button className="flex-1 py-4 px-4 text-center font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors cursor-pointer">
+            </Button>
+            <Button
+              variant="text"
+              color="gray"
+              rounded="none"
+              className="flex-1 py-4 px-4 text-center font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900"
+            >
               Replies
-            </button>
-            <button className="flex-1 py-4 px-4 text-center font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors cursor-pointer">
+            </Button>
+            <Button
+              variant="text"
+              color="gray"
+              rounded="none"
+              className="flex-1 py-4 px-4 text-center font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900"
+            >
               Media
-            </button>
-            <button className="flex-1 py-4 px-4 text-center font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors cursor-pointer">
+            </Button>
+            <Button
+              variant="text"
+              color="gray"
+              rounded="none"
+              className="flex-1 py-4 px-4 text-center font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900"
+            >
               Likes
-            </button>
+            </Button>
           </div>
         </div>
         <div>

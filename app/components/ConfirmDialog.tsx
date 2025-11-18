@@ -39,12 +39,6 @@ export default function ConfirmDialog({
     onConfirm();
   };
 
-  const confirmButtonVariant = "primary";
-  const confirmButtonClass =
-    variant === "danger"
-      ? "bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white"
-      : "";
-
   return (
     <Dialog
       isOpen={isOpen}
@@ -66,6 +60,7 @@ export default function ConfirmDialog({
           <Button
             type="button"
             variant="outline"
+            color="gray"
             onClick={onClose}
             disabled={isLoading}
           >
@@ -73,10 +68,10 @@ export default function ConfirmDialog({
           </Button>
           <Button
             type="button"
-            variant={confirmButtonVariant}
+            variant="fill"
+            color={variant === "danger" ? "danger" : "primary"}
             onClick={handleConfirm}
             isLoading={isLoading}
-            className={confirmButtonClass}
           >
             {confirmText}
           </Button>

@@ -1,5 +1,6 @@
 import Sidebar from "../../../../components/Sidebar";
 import Link from "next/link";
+import Button from "../../../../components/Button";
 
 // Mock data
 const mockFollowing = [
@@ -78,9 +79,15 @@ export default function FollowingPage({ params }: FollowingPageProps) {
                     )}
                   </div>
                 </Link>
-                <button className="bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 px-4 py-1.5 rounded-full text-sm font-semibold transition-colors cursor-pointer">
+                <Button
+                  variant="fill"
+                  color="gray"
+                  rounded="full"
+                  size="sm"
+                  className="font-semibold"
+                >
                   Following
-                </button>
+                </Button>
               </div>
             </div>
           ))}

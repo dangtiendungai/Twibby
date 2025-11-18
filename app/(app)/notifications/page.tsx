@@ -1,5 +1,6 @@
 import Sidebar from "../../components/Sidebar";
 import Link from "next/link";
+import Button from "../../components/Button";
 
 // Mock notification data
 const mockNotifications = [
@@ -111,9 +112,13 @@ export default function NotificationsPage() {
             <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
               Notifications
             </h2>
-            <button className="text-sm text-blue-500 hover:text-blue-600 cursor-pointer">
+            <Button
+              variant="text"
+              color="primary"
+              size="sm"
+            >
               Mark all as read
-            </button>
+            </Button>
           </div>
         </div>
 

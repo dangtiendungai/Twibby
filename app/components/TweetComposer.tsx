@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Button from "./Button";
 
 export default function TweetComposer() {
   const [content, setContent] = useState("");
@@ -36,13 +37,16 @@ export default function TweetComposer() {
             </span>
             /{maxLength}
           </div>
-          <button
+          <Button
             type="submit"
+            variant="fill"
+            color="primary"
+            rounded="full"
             disabled={content.trim().length === 0 || content.length > maxLength}
-            className="bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2 px-6 rounded-full transition-colors cursor-pointer"
+            className="font-semibold"
           >
             Post
-          </button>
+          </Button>
         </div>
       </form>
     </div>

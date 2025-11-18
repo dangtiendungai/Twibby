@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Sidebar from "../../components/Sidebar";
 import Tweet from "../../components/Tweet";
+import Button from "../../components/Button";
 import { Search } from "lucide-react";
 
 // Mock search results
@@ -55,46 +56,58 @@ export default function SearchPage() {
             />
           </div>
           <div className="flex border-b border-gray-200 dark:border-gray-800">
-            <button
+            <Button
+              variant="text"
+              color="gray"
+              rounded="none"
               onClick={() => setActiveTab("top")}
-              className={`flex-1 py-3 px-4 text-center font-semibold transition-colors ${
+              className={`flex-1 py-3 px-4 text-center font-semibold ${
                 activeTab === "top"
                   ? "text-gray-900 dark:text-gray-100 border-b-2 border-blue-500"
                   : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900"
               }`}
             >
               Top
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="text"
+              color="gray"
+              rounded="none"
               onClick={() => setActiveTab("latest")}
-              className={`flex-1 py-3 px-4 text-center font-semibold transition-colors ${
+              className={`flex-1 py-3 px-4 text-center font-semibold ${
                 activeTab === "latest"
                   ? "text-gray-900 dark:text-gray-100 border-b-2 border-blue-500"
                   : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900"
               }`}
             >
               Latest
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="text"
+              color="gray"
+              rounded="none"
               onClick={() => setActiveTab("people")}
-              className={`flex-1 py-3 px-4 text-center font-semibold transition-colors ${
+              className={`flex-1 py-3 px-4 text-center font-semibold ${
                 activeTab === "people"
                   ? "text-gray-900 dark:text-gray-100 border-b-2 border-blue-500"
                   : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900"
               }`}
             >
               People
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="text"
+              color="gray"
+              rounded="none"
               onClick={() => setActiveTab("media")}
-              className={`flex-1 py-3 px-4 text-center font-semibold transition-colors ${
+              className={`flex-1 py-3 px-4 text-center font-semibold ${
                 activeTab === "media"
                   ? "text-gray-900 dark:text-gray-100 border-b-2 border-blue-500"
                   : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900"
               }`}
             >
               Media
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -123,9 +136,15 @@ export default function SearchPage() {
                         )}
                       </div>
                     </div>
-                    <button className="bg-black dark:bg-white text-white dark:text-black px-4 py-1.5 rounded-full text-sm font-semibold hover:opacity-80 transition-opacity cursor-pointer">
+                    <Button
+                      variant="fill"
+                      color="primary"
+                      rounded="full"
+                      size="sm"
+                      className="bg-black dark:bg-white text-white dark:text-black hover:opacity-80 font-semibold"
+                    >
                       Follow
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))}

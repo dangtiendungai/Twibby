@@ -199,7 +199,8 @@ export default function LoginPage() {
               </div>
               <Button
                 type="button"
-                variant="ghost"
+                variant="text"
+                color="gray"
                 fullWidth
                 size="sm"
                 onClick={() => {
@@ -234,7 +235,8 @@ export default function LoginPage() {
 
               <Button
                 type="button"
-                variant="ghost"
+                variant="text"
+                color="gray"
                 fullWidth
                 size="sm"
                 onClick={() => {

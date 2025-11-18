@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Button from "./Button";
 
 interface ProfileCardProps {
   username: string;
@@ -64,21 +65,25 @@ export default function ProfileCard({
             <p className="text-gray-500 dark:text-gray-400">@{username}</p>
           </div>
           {!isOwnProfile && (
-            <button
+            <Button
+              variant="fill"
+              color={followingState ? "gray" : "primary"}
+              rounded="full"
               onClick={handleFollowToggle}
-              className={`px-6 py-2 rounded-full font-semibold transition-colors cursor-pointer ${
-                followingState
-                  ? "bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
-                  : "bg-blue-500 hover:bg-blue-600 text-white"
-              }`}
+              className="font-semibold"
             >
               {followingState ? "Following" : "Follow"}
-            </button>
+            </Button>
           )}
           {isOwnProfile && (
-            <button className="px-6 py-2 rounded-full font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+            <Button
+              variant="outline"
+              color="gray"
+              rounded="full"
+              className="font-semibold"
+            >
               Edit Profile
-            </button>
+            </Button>
           )}
         </div>
         {bio && (

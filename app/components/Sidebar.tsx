@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Home, Search, User, Plus, Bell, Bookmark, Settings, Hash, LogOut } from "lucide-react";
+import Button from "./Button";
 
 const navigation = [
   { name: "Home", href: "/", icon: Home },
@@ -104,20 +105,29 @@ export default function Sidebar() {
 
         <div className="mt-auto px-2 space-y-2">
           {user && (
-            <button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 sm:px-6 rounded-full transition-colors text-sm sm:text-base flex items-center justify-center gap-2 cursor-pointer">
+            <Button
+              variant="fill"
+              color="primary"
+              rounded="full"
+              fullWidth
+              className="font-semibold"
+            >
               <span className="hidden sm:inline">Post</span>
               <Plus className="w-5 h-5 sm:hidden" />
-            </button>
+            </Button>
           )}
           {user ? (
-            <button
+            <Button
+              variant="outline"
+              color="gray"
+              rounded="full"
+              fullWidth
               onClick={handleLogout}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-colors text-sm sm:text-base"
             >
               <LogOut className="w-5 h-5" />
               <span className="hidden sm:inline">Log out</span>
               <span className="sm:hidden">Log out</span>
-            </button>
+            </Button>
           ) : (
             <Link
               href="/login"

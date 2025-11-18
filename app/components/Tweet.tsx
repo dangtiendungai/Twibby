@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Heart, MessageCircle, Repeat2 } from "lucide-react";
+import Button from "./Button";
 
 interface TweetProps {
   id: string;
@@ -100,34 +101,41 @@ export default function Tweet({
               className="flex items-center gap-6 text-gray-500 dark:text-gray-400"
               onClick={(e) => e.stopPropagation()}
             >
-              <button
+              <Button
+                variant="text"
+                color={liked ? "danger" : "gray"}
+                size="sm"
                 onClick={handleLike}
-                className={`flex items-center gap-2 hover:text-red-500 transition-colors cursor-pointer ${
-                  liked ? "text-red-500" : ""
-                }`}
+                className="gap-2 hover:text-red-500"
               >
                 <Heart className={`w-5 h-5 ${liked ? "fill-current" : ""}`} />
                 <span className="text-sm">{likeCount}</span>
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="text"
+                color="gray"
+                size="sm"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
                 }}
-                className="flex items-center gap-2 hover:text-blue-500 transition-colors cursor-pointer"
+                className="gap-2 hover:text-blue-500"
               >
                 <MessageCircle className="w-5 h-5" />
                 <span className="text-sm">0</span>
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="text"
+                color="gray"
+                size="sm"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
                 }}
-                className="flex items-center gap-2 hover:text-blue-500 transition-colors cursor-pointer"
+                className="gap-2 hover:text-blue-500"
               >
                 <Repeat2 className="w-5 h-5" />
-              </button>
+              </Button>
             </div>
           </div>
         </div>
