@@ -39,7 +39,7 @@ export default function TweetComposer() {
           <button
             type="submit"
             disabled={content.trim().length === 0 || content.length > maxLength}
-            className="bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2 px-6 rounded-full transition-colors"
+            className="bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2 px-6 rounded-full transition-colors cursor-pointer"
           >
             Post
           </button>

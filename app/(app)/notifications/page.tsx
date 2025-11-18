@@ -111,7 +111,7 @@ export default function NotificationsPage() {
             <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
               Notifications
             </h2>
-            <button className="text-sm text-blue-500 hover:text-blue-600">
+            <button className="text-sm text-blue-500 hover:text-blue-600 cursor-pointer">
               Mark all as read
             </button>
           </div>

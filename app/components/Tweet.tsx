@@ -102,7 +102,7 @@ export default function Tweet({
             >
               <button
                 onClick={handleLike}
-                className={`flex items-center gap-2 hover:text-red-500 transition-colors ${
+                className={`flex items-center gap-2 hover:text-red-500 transition-colors cursor-pointer ${
                   liked ? "text-red-500" : ""
                 }`}
               >
@@ -114,7 +114,7 @@ export default function Tweet({
                   e.preventDefault();
                   e.stopPropagation();
                 }}
-                className="flex items-center gap-2 hover:text-blue-500 transition-colors"
+                className="flex items-center gap-2 hover:text-blue-500 transition-colors cursor-pointer"
               >
                 <MessageCircle className="w-5 h-5" />
                 <span className="text-sm">0</span>
@@ -124,7 +124,7 @@ export default function Tweet({
                   e.preventDefault();
                   e.stopPropagation();
                 }}
-                className="flex items-center gap-2 hover:text-blue-500 transition-colors"
+                className="flex items-center gap-2 hover:text-blue-500 transition-colors cursor-pointer"
               >
                 <Repeat2 className="w-5 h-5" />
               </button>

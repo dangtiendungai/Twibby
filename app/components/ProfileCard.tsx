@@ -66,7 +66,7 @@ export default function ProfileCard({
           {!isOwnProfile && (
             <button
               onClick={handleFollowToggle}
-              className={`px-6 py-2 rounded-full font-semibold transition-colors ${
+              className={`px-6 py-2 rounded-full font-semibold transition-colors cursor-pointer ${
                 followingState
                   ? "bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
                   : "bg-blue-500 hover:bg-blue-600 text-white"
@@ -76,7 +76,7 @@ export default function ProfileCard({
             </button>
           )}
           {isOwnProfile && (
-            <button className="px-6 py-2 rounded-full font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <button className="px-6 py-2 rounded-full font-semibold border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer">
               Edit Profile
             </button>
           )}

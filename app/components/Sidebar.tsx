@@ -1,8 +1,11 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, User, Plus, Bell, Bookmark, Settings, Hash } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { Home, Search, User, Plus, Bell, Bookmark, Settings, Hash, LogOut } from "lucide-react";
 
 const navigation = [
   { name: "Home", href: "/", icon: Home },
@@ -16,6 +19,54 @@ const navigation = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    try {
+      const supabase = createClient();
+      
+      // Get initial session
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        setUser(user);
+        setIsLoading(false);
+      });
+
+      // Listen for auth changes
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user ?? null);
+      });
+
+      return () => subscription.unsubscribe();
+    } catch (error) {
+      console.error("Error initializing Supabase client:", error);
+      setIsLoading(false);
+    }
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error("Error signing out:", error);
+        return;
+      }
+
+      // Clear user state immediately
+      setUser(null);
+      
+      // Redirect to login page
+      router.push("/login");
+      router.refresh();
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   return (
     <aside className="sticky top-0 h-screen w-[240px] flex-shrink-0 border-r border-gray-200 dark:border-gray-800 px-2 sm:px-4 py-6">
@@ -52,17 +103,30 @@ export default function Sidebar() {
         </nav>
 
         <div className="mt-auto px-2 space-y-2">
-          <button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 sm:px-6 rounded-full transition-colors text-sm sm:text-base flex items-center justify-center gap-2">
-            <span className="hidden sm:inline">Post</span>
-            <Plus className="w-5 h-5 sm:hidden" />
-          </button>
-          <Link
-            href="/login"
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-colors text-sm sm:text-base"
-          >
-            <span className="hidden sm:inline">Sign In</span>
-            <span className="sm:hidden">Sign In</span>
-          </Link>
+          {user && (
+            <button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 sm:px-6 rounded-full transition-colors text-sm sm:text-base flex items-center justify-center gap-2 cursor-pointer">
+              <span className="hidden sm:inline">Post</span>
+              <Plus className="w-5 h-5 sm:hidden" />
+            </button>
+          )}
+          {user ? (
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-colors text-sm sm:text-base"
+            >
+              <LogOut className="w-5 h-5" />
+              <span className="hidden sm:inline">Log out</span>
+              <span className="sm:hidden">Log out</span>
+            </button>
+          ) : (
+            <Link
+              href="/login"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-full border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition-colors text-sm sm:text-base"
+            >
+              <span className="hidden sm:inline">Sign In</span>
+              <span className="sm:hidden">Sign In</span>
+            </Link>
+          )}
         </div>
       </div>
     </aside>

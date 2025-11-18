@@ -123,7 +123,7 @@ export default function SearchPage() {
                         )}
                       </div>
                     </div>
-                    <button className="bg-black dark:bg-white text-white dark:text-black px-4 py-1.5 rounded-full text-sm font-semibold hover:opacity-80 transition-opacity">
+                    <button className="bg-black dark:bg-white text-white dark:text-black px-4 py-1.5 rounded-full text-sm font-semibold hover:opacity-80 transition-opacity cursor-pointer">
                       Follow
                     </button>
                   </div>
