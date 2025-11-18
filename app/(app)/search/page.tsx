@@ -3,11 +3,12 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Tweet from "../../components/Tweet";
+import TweetsList from "../../components/TweetsList";
 import Button from "../../components/Button";
 import { Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { fetchProfileMap } from "@/lib/supabase/profile-helpers";
+import { fetchTweetsWithDetails } from "@/lib/supabase/tweet-helpers";
+import type { TweetWithDetails } from "@/lib/supabase/tweet-helpers";
 
 interface SearchUser {
   id: string;
@@ -18,20 +19,8 @@ interface SearchUser {
   isFollowing?: boolean;
 }
 
-interface SearchTweet {
-  id: string;
-  content: string;
-  author: {
-    username: string;
-    name: string;
-    avatar?: string;
-  };
-  createdAt: string;
-  likes: number;
-  isLiked: boolean;
-  imageUrl?: string | null;
-  userId: string;
-}
+// SearchTweet is now just an alias for TweetWithDetails
+type SearchTweet = TweetWithDetails;
 
 export default function SearchPage() {
   const router = useRouter();
@@ -96,76 +85,19 @@ export default function SearchPage() {
             }
           }
         } else {
-          // Search tweets
-          const { data: tweetData, error } = await supabase
-            .from("tweets")
-            .select(
-              `
-              id,
-              content,
-              created_at,
-              user_id,
-              image_url
-            `
-            )
-            .ilike("content", `%${searchQuery}%`)
-            .order(activeTab === "latest" ? "created_at" : "created_at", {
+          // Search tweets using shared helper
+          const tweets = await fetchTweetsWithDetails(
+            supabase,
+            currentUser?.id,
+            {
+              limit: 50,
+              orderBy: "created_at",
               ascending: false,
-            })
-            .limit(50);
-
-          if (error) {
-            console.error("Error searching tweets:", error);
-            setTweets([]);
-          } else if (tweetData) {
-            const tweetIds = tweetData.map((t) => t.id);
-
-            const profileMap = await fetchProfileMap(
-              supabase,
-              tweetData.map((tweet) => tweet.user_id)
-            );
-
-            const { data: likesData } = await supabase
-              .from("likes")
-              .select("tweet_id")
-              .in("tweet_id", tweetIds);
-
-            let userLikes: string[] = [];
-            if (currentUser) {
-              const { data: userLikesData } = await supabase
-                .from("likes")
-                .select("tweet_id")
-                .eq("user_id", currentUser.id)
-                .in("tweet_id", tweetIds);
-
-              userLikes = userLikesData?.map((l) => l.tweet_id) || [];
+              searchQuery,
             }
+          );
 
-            const likeCounts: Record<string, number> = {};
-            likesData?.forEach((like) => {
-              likeCounts[like.tweet_id] = (likeCounts[like.tweet_id] || 0) + 1;
-            });
-
-            setTweets(
-              tweetData.map((tweet) => {
-                const profile = profileMap.get(tweet.user_id);
-                return {
-                  id: tweet.id,
-                  content: tweet.content,
-                  author: {
-                    username: profile?.username || "unknown",
-                    name: profile?.name || "Unknown User",
-                    avatar: profile?.avatar_url || undefined,
-                  },
-                  createdAt: tweet.created_at,
-                  likes: likeCounts[tweet.id] || 0,
-                  isLiked: userLikes.includes(tweet.id),
-                  imageUrl: tweet.image_url,
-                  userId: tweet.user_id,
-                };
-              })
-            );
-          }
+          setTweets(tweets);
         }
       } catch (error) {
         console.error("Error searching:", error);
@@ -321,19 +253,7 @@ export default function SearchPage() {
           ) : (
             <div>
               {tweets.length > 0 ? (
-                tweets.map((tweet) => (
-                  <Tweet
-                    key={tweet.id}
-                    id={tweet.id}
-                    content={tweet.content}
-                    author={tweet.author}
-                    createdAt={tweet.createdAt}
-                    likes={tweet.likes}
-                    isLiked={tweet.isLiked}
-                    imageUrl={tweet.imageUrl}
-                    userId={tweet.userId}
-                  />
-                ))
+                <TweetsList tweets={tweets} />
               ) : searchQuery ? (
                 <div className="p-8 text-center">
                   <p className="text-gray-500 dark:text-gray-400">
