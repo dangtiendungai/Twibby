@@ -172,29 +172,6 @@ export default function NotificationsPage() {
           </div>
         )}
       </main>
-      <aside className="hidden lg:block w-[240px] flex-shrink-0 p-4">
-        <div className="sticky top-4">
-          <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4">
-            <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100 mb-4">
-              Filter
-            </h3>
-            <div className="space-y-2">
-              <button className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-sm font-medium text-gray-900 dark:text-gray-100">
-                All
-              </button>
-              <button className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-sm text-gray-600 dark:text-gray-400">
-                Mentions
-              </button>
-              <button className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-sm text-gray-600 dark:text-gray-400">
-                Follows
-              </button>
-              <button className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-sm text-gray-600 dark:text-gray-400">
-                Likes
-              </button>
-            </div>
-          </div>
-        </div>
-      </aside>
     </>
   );
 }

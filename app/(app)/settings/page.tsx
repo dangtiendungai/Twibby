@@ -71,15 +71,16 @@ export default function SettingsPage() {
               Privacy
             </h3>
             <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6 space-y-4">
-              <Checkbox
-                id="private-account"
-                label="Make my account private"
-                helperText="Only approved followers can see your tweets"
-              />
-              <Checkbox
-                id="show-email"
-                label="Show email on profile"
-              />
+              <div>
+                <Checkbox
+                  id="private-account"
+                  label="Make my account private"
+                />
+                <p className="mt-1 ml-8 text-xs text-gray-500 dark:text-gray-400">
+                  Only approved followers can see your tweets
+                </p>
+              </div>
+              <Checkbox id="show-email" label="Show email on profile" />
               <Checkbox
                 id="allow-tags"
                 label="Allow anyone to tag me in photos"
@@ -141,9 +142,13 @@ export default function SettingsPage() {
             <div className="bg-white dark:bg-gray-900 rounded-lg border border-red-200 dark:border-red-900 p-6 space-y-4">
               <div>
                 <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-                  Delete your account and all of your data. This action cannot be undone.
+                  Delete your account and all of your data. This action cannot
+                  be undone.
                 </p>
-                <Button variant="outline" className="border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
+                <Button
+                  variant="outline"
+                  className="border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                >
                   Delete account
                 </Button>
               </div>
@@ -151,34 +156,6 @@ export default function SettingsPage() {
           </section>
         </div>
       </main>
-      <aside className="hidden lg:block w-[240px] flex-shrink-0 p-4">
-        <div className="sticky top-4">
-          <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4">
-            <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100 mb-4">
-              Quick Links
-            </h3>
-            <div className="space-y-2">
-              <a href="#account" className="block text-sm text-blue-500 hover:text-blue-600">
-                Account
-              </a>
-              <a href="#profile" className="block text-sm text-blue-500 hover:text-blue-600">
-                Profile
-              </a>
-              <a href="#privacy" className="block text-sm text-blue-500 hover:text-blue-600">
-                Privacy
-              </a>
-              <a href="#notifications" className="block text-sm text-blue-500 hover:text-blue-600">
-                Notifications
-              </a>
-              <a href="#security" className="block text-sm text-blue-500 hover:text-blue-600">
-                Security
-              </a>
-            </div>
-          </div>
-        </div>
-      </aside>
     </>
   );
 }
-
-

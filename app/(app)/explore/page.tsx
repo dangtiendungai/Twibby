@@ -4,7 +4,8 @@ import Tweet from "../../components/Tweet";
 const mockTweets = [
   {
     id: "1",
-    content: "Just launched my new project! Excited to share it with everyone. 🚀",
+    content:
+      "Just launched my new project! Excited to share it with everyone. 🚀",
     author: {
       username: "johndoe",
       name: "John Doe",
@@ -15,7 +16,8 @@ const mockTweets = [
   },
   {
     id: "2",
-    content: "Beautiful sunset today! Sometimes you just need to stop and appreciate the little things in life. 🌅",
+    content:
+      "Beautiful sunset today! Sometimes you just need to stop and appreciate the little things in life. 🌅",
     author: {
       username: "janedoe",
       name: "Jane Doe",
@@ -26,7 +28,8 @@ const mockTweets = [
   },
   {
     id: "3",
-    content: "Working on something exciting. Can't wait to reveal it! Stay tuned. 💫",
+    content:
+      "Working on something exciting. Can't wait to reveal it! Stay tuned. 💫",
     author: {
       username: "devmaster",
       name: "Dev Master",
@@ -37,7 +40,8 @@ const mockTweets = [
   },
   {
     id: "4",
-    content: "The best way to learn is by building. Start small, iterate, and keep shipping! 💪",
+    content:
+      "The best way to learn is by building. Start small, iterate, and keep shipping! 💪",
     author: {
       username: "codeguru",
       name: "Code Guru",
@@ -71,31 +75,6 @@ export default function ExplorePage() {
           ))}
         </div>
       </main>
-      <aside className="hidden lg:block w-80 flex-shrink-0 p-4">
-        <div className="sticky top-4">
-          <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 mb-4">
-            <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100 mb-4">
-              Trending
-            </h3>
-            <div className="space-y-4">
-              {["#webdev", "#nextjs", "#supabase", "#react"].map((tag) => (
-                <div
-                  key={tag}
-                  className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded-lg transition-colors"
-                >
-                  <p className="font-semibold text-gray-900 dark:text-gray-100">
-                    {tag}
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Trending in Technology
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </aside>
     </>
   );
 }
-

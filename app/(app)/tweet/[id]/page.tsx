@@ -5,7 +5,8 @@ import TweetComposer from "../../../components/TweetComposer";
 // Mock data - will be replaced with Supabase data later
 const mockTweet = {
   id: "1",
-  content: "Just launched my new project! Excited to share it with everyone. 🚀",
+  content:
+    "Just launched my new project! Excited to share it with everyone. 🚀",
   author: {
     username: "johndoe",
     name: "John Doe",
@@ -72,7 +73,10 @@ export default function TweetPage({ params }: TweetPageProps) {
 
           <div>
             {mockReplies.map((reply) => (
-              <div key={reply.id} className="pl-4 border-l-2 border-gray-200 dark:border-gray-800 ml-4">
+              <div
+                key={reply.id}
+                className="pl-4 border-l-2 border-gray-200 dark:border-gray-800 ml-4"
+              >
                 <Tweet
                   id={reply.id}
                   content={reply.content}
@@ -86,20 +90,6 @@ export default function TweetPage({ params }: TweetPageProps) {
           </div>
         </div>
       </main>
-      <aside className="hidden lg:block w-[240px] flex-shrink-0 p-4">
-        <div className="sticky top-4">
-          <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4">
-            <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100 mb-4">
-              Related Tweets
-            </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              More tweets from @{mockTweet.author.username}
-            </p>
-          </div>
-        </div>
-      </aside>
     </>
   );
 }
-
-

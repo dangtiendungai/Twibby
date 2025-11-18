@@ -82,30 +82,6 @@ export default function ProfilePage() {
           ))}
         </div>
       </main>
-      <aside className="hidden lg:block w-80 flex-shrink-0 p-4">
-        <div className="sticky top-4">
-          <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4">
-            <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100 mb-4">
-              Trending
-            </h3>
-            <div className="space-y-4">
-              {["#webdev", "#nextjs", "#supabase"].map((tag) => (
-                <div
-                  key={tag}
-                  className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded-lg transition-colors"
-                >
-                  <p className="font-semibold text-gray-900 dark:text-gray-100">
-                    {tag}
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Trending in Technology
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </aside>
     </>
   );
 }

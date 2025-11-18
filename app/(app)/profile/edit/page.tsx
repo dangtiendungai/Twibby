@@ -101,22 +101,6 @@ export default function EditProfilePage() {
           </form>
         </div>
       </main>
-      <aside className="hidden lg:block w-[240px] flex-shrink-0 p-4">
-        <div className="sticky top-4">
-          <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4">
-            <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100 mb-4">
-              Tips
-            </h3>
-            <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-              <li>• Use a clear profile picture</li>
-              <li>• Add a bio to help others find you</li>
-              <li>• Keep your username memorable</li>
-            </ul>
-          </div>
-        </div>
-      </aside>
     </>
   );
 }
-
-

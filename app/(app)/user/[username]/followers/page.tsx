@@ -92,20 +92,6 @@ export default function FollowersPage({ params }: FollowersPageProps) {
           ))}
         </div>
       </main>
-      <aside className="hidden lg:block w-[240px] flex-shrink-0 p-4">
-        <div className="sticky top-4">
-          <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4">
-            <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100 mb-4">
-              Suggestions
-            </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              People you might know
-            </p>
-          </div>
-        </div>
-      </aside>
     </>
   );
 }
-
-

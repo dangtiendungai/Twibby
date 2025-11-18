@@ -5,7 +5,8 @@ import Tweet from "../../components/Tweet";
 const mockBookmarks = [
   {
     id: "1",
-    content: "Just launched my new project! Excited to share it with everyone. 🚀",
+    content:
+      "Just launched my new project! Excited to share it with everyone. 🚀",
     author: {
       username: "johndoe",
       name: "John Doe",
@@ -16,7 +17,8 @@ const mockBookmarks = [
   },
   {
     id: "2",
-    content: "Beautiful sunset today! Sometimes you just need to stop and appreciate the little things in life. 🌅",
+    content:
+      "Beautiful sunset today! Sometimes you just need to stop and appreciate the little things in life. 🌅",
     author: {
       username: "janedoe",
       name: "Jane Doe",
@@ -62,20 +64,6 @@ export default function BookmarksPage() {
           )}
         </div>
       </main>
-      <aside className="hidden lg:block w-[240px] flex-shrink-0 p-4">
-        <div className="sticky top-4">
-          <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4">
-            <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100 mb-4">
-              Tips
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Bookmark tweets to save them for later. Click the bookmark icon on any tweet to save it.
-            </p>
-          </div>
-        </div>
-      </aside>
     </>
   );
 }
-
-
