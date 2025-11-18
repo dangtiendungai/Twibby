@@ -3,25 +3,13 @@ import { notFound } from "next/navigation";
 import Tweet from "../../../components/Tweet";
 import TweetComposer from "../../../components/TweetComposer";
 import { createClient } from "@/lib/supabase/server";
+import { fetchProfileMap } from "@/lib/supabase/profile-helpers";
 
 interface TweetPageProps {
   params: Promise<{
     id: string;
   }>;
 }
-
-type TweetWithProfile = {
-  id: string;
-  content: string;
-  created_at: string;
-  user_id: string;
-  image_url: string | null;
-  profiles: {
-    username: string | null;
-    name: string | null;
-    avatar_url: string | null;
-  } | null;
-};
 
 async function getTweet(tweetId: string) {
   try {
@@ -32,26 +20,17 @@ async function getTweet(tweetId: string) {
 
     const { data: tweet, error } = await supabase
       .from("tweets")
-      .select(
-        `
-        id,
-        content,
-        created_at,
-        user_id,
-        image_url,
-        profiles (
-          username,
-          name,
-          avatar_url
-        )
-      `
-      )
+      .select("id, content, created_at, user_id, image_url")
       .eq("id", tweetId)
-      .single<TweetWithProfile>();
+      .single();
 
     if (error || !tweet) {
+      console.error("Error fetching tweet:", error);
       return null;
     }
+
+    const profileMap = await fetchProfileMap(supabase, [tweet.user_id]);
+    const profile = profileMap.get(tweet.user_id);
 
     const { count: likesCount } = await supabase
       .from("likes")
@@ -77,9 +56,9 @@ async function getTweet(tweetId: string) {
       isLiked,
       imageUrl: tweet.image_url,
       author: {
-        username: tweet.profiles?.username || "unknown",
-        name: tweet.profiles?.name || "Unknown User",
-        avatar: tweet.profiles?.avatar_url || undefined,
+        username: profile?.username || "unknown",
+        name: profile?.name || "Unknown User",
+        avatar: profile?.avatar_url || undefined,
       },
     };
   } catch (error) {
