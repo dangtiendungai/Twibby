@@ -9,6 +9,7 @@ import TextField from "../../components/TextField";
 import Checkbox from "../../components/Checkbox";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import AvatarUploader from "../../components/AvatarUploader";
+import BannerUploader from "../../components/BannerUploader";
 import type { User } from "@supabase/supabase-js";
 
 interface Profile {
@@ -18,6 +19,7 @@ interface Profile {
   email: string | null;
   bio: string | null;
   avatar_url: string | null;
+  banner_url: string | null;
 }
 
 export default function SettingsPage() {
@@ -73,6 +75,13 @@ export default function SettingsPage() {
     router.refresh();
   };
 
+  const handleBannerUpload = (bannerUrl: string) => {
+    if (profile) {
+      setProfile({ ...profile, banner_url: bannerUrl || null });
+    }
+    router.refresh();
+  };
+
   const handleSaveProfile = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!user || !profile) return;
@@ -113,13 +122,40 @@ export default function SettingsPage() {
   };
 
   const handleDeleteAccount = async () => {
+    if (!user) return;
+
     setIsDeleting(true);
-    // TODO: Implement account deletion
-    console.log("Deleting account...");
-    setTimeout(() => {
+    try {
+      const response = await fetch("/api/delete-account", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to delete account");
+      }
+
+      // Sign out the user
+      const supabase = createClient();
+      await supabase.auth.signOut();
+
+      // Show success message
+      toast.success("Account deleted successfully");
+
+      // Redirect to login after a short delay
+      setTimeout(() => {
+        router.push("/login");
+      }, 1500);
+    } catch (error: any) {
+      console.error("Error deleting account:", error);
+      toast.error(error.message || "Failed to delete account. Please try again.");
       setIsDeleting(false);
       setIsDeleteDialogOpen(false);
-    }, 2000);
+    }
   };
 
   if (isLoading) {
@@ -178,6 +214,16 @@ export default function SettingsPage() {
               Profile
             </h3>
             <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Banner Image
+                </label>
+                <BannerUploader
+                  currentBannerUrl={profile.banner_url}
+                  userId={user.id}
+                  onUploadComplete={handleBannerUpload}
+                />
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Profile Picture

@@ -162,6 +162,7 @@ async function UserProfileContent({ username }: { username: string }) {
         name={profile.name || ""}
         bio={profile.bio || undefined}
         avatar={profile.avatar_url || undefined}
+        banner={profile.banner_url || undefined}
         joinedDate={profile.created_at}
         followers={profile.followers}
         following={profile.following}

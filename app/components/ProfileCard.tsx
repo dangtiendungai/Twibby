@@ -10,6 +10,7 @@ interface ProfileCardProps {
   name: string;
   bio?: string;
   avatar?: string;
+  banner?: string;
   joinedDate: string;
   followers: number;
   following: number;
@@ -25,6 +26,7 @@ export default function ProfileCard({
   name,
   bio,
   avatar,
+  banner,
   joinedDate,
   followers: initialFollowers,
   following,
@@ -126,7 +128,15 @@ export default function ProfileCard({
 
   return (
     <div className="border-b border-gray-200 dark:border-gray-800">
-      <div className="h-32 bg-gradient-to-r from-blue-400 to-purple-500"></div>
+      <div className="h-32 bg-gradient-to-r from-blue-400 to-purple-500 relative overflow-hidden">
+        {banner ? (
+          <img
+            src={banner}
+            alt={`${name}'s banner`}
+            className="w-full h-full object-cover"
+          />
+        ) : null}
+      </div>
       <div className="px-4 pb-4">
         <div className="relative -mt-16 mb-4">
           <div className="w-24 h-24 rounded-full bg-gray-300 dark:bg-gray-700 border-4 border-white dark:border-black overflow-hidden flex-shrink-0">

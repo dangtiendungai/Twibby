@@ -113,7 +113,7 @@ export default function SearchPage() {
   return (
     <>
       <main className="flex-1 border-x border-gray-200 dark:border-gray-800 min-w-0">
-        <div className="sticky top-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 px-4 py-4 z-10">
+        <div className="sticky top-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 px-4 pt-4 z-10">
           <div className="relative mb-4">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
@@ -124,7 +124,7 @@ export default function SearchPage() {
               className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-700 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
             />
           </div>
-          <div className="flex border-b border-gray-200 dark:border-gray-800">
+          <div className="flex dark:border-gray-800">
             <Button
               variant="text"
               color="gray"
