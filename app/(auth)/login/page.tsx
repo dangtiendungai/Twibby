@@ -27,18 +27,6 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // First, check if 2FA is enabled for this email
-      const checkResponse = await fetch("/api/2fa/check-user", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      const checkData = await checkResponse.json();
-      const requires2FA = checkData.requires2FA || false;
-
       const supabase = createClient();
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
@@ -51,13 +39,31 @@ export default function LoginPage() {
         return;
       }
 
-      // If 2FA is required, show verification dialog
-      if (requires2FA) {
-        setPendingEmail(email);
-        setPendingPassword(password);
-        setShow2FA(true);
-        setIsLoading(false);
-        return;
+      // After successful password login, check if 2FA is enabled
+      // We can now use the authenticated session to check 2FA status
+      try {
+        const statusResponse = await fetch("/api/2fa/status");
+        if (!statusResponse.ok) {
+          // If status check fails, proceed without 2FA (fallback)
+          router.push("/");
+          router.refresh();
+          return;
+        }
+        
+        const statusData = await statusResponse.json();
+        const requires2FA = statusData.enabled === true;
+
+        // If 2FA is required, show verification dialog
+        if (requires2FA) {
+          setPendingEmail(email);
+          setPendingPassword(password);
+          setShow2FA(true);
+          setIsLoading(false);
+          return;
+        }
+      } catch (statusError) {
+        // If status check fails, proceed without 2FA (fallback)
+        console.error("Error checking 2FA status:", statusError);
       }
 
       // Redirect to home page on success

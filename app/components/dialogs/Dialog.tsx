@@ -102,7 +102,7 @@ export default function Dialog({
       {/* Dialog */}
       <div
         ref={dialogRef}
-        className={`relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full ${sizeClasses[size]} transform transition-all`}
+        className={`relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl w-full outline-none ${sizeClasses[size]} transform transition-all`}
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
       >
