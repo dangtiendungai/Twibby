@@ -6,6 +6,8 @@ import TweetsList from "../../components/tweets/TweetsList";
 import { createClient } from "@/lib/supabase/server";
 import { fetchProfileMap } from "@/lib/supabase/profile-helpers";
 
+export const dynamic = "force-dynamic";
+
 async function getCurrentUserProfile() {
   try {
     const supabase = await createClient();

@@ -4,6 +4,8 @@ import Tweet from "../../components/tweets/Tweet";
 import { createClient } from "@/lib/supabase/server";
 import { fetchProfileMap } from "@/lib/supabase/profile-helpers";
 
+export const dynamic = "force-dynamic";
+
 type BookmarkTweet = {
   id: string;
   content: string;
