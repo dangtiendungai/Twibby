@@ -72,7 +72,7 @@ const getNotificationIcon = (type: string) => {
   }
 };
 
-const getNotificationText = (notification: typeof mockNotifications[0]) => {
+const getNotificationText = (notification: (typeof mockNotifications)[0]) => {
   switch (notification.type) {
     case "like":
       return `liked your tweet`;
@@ -121,7 +121,11 @@ export default function NotificationsPage() {
           {mockNotifications.map((notification) => (
             <Link
               key={notification.id}
-              href={notification.tweet ? `/tweet/${notification.tweet.id}` : `/user/${notification.user.username}`}
+              href={
+                notification.tweet
+                  ? `/tweet/${notification.tweet.id}`
+                  : `/user/${notification.user.username}`
+              }
               className={`block border-b border-gray-200 dark:border-gray-800 p-4 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors ${
                 !notification.read ? "bg-blue-50/50 dark:bg-blue-950/20" : ""
               }`}
@@ -194,5 +198,3 @@ export default function NotificationsPage() {
     </>
   );
 }
-
-
