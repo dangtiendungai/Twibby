@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { Heart, MessageCircle, Repeat2 } from "lucide-react";
 import Button from "./Button";
 
@@ -25,21 +26,87 @@ export default function Tweet({
   content,
   author,
   createdAt,
-  likes,
-  isLiked = false,
+  likes: initialLikes,
+  isLiked: initialIsLiked = false,
   onLike,
 }: TweetProps) {
   const router = useRouter();
-  const [liked, setLiked] = useState(isLiked);
-  const [likeCount, setLikeCount] = useState(likes);
+  const [liked, setLiked] = useState(initialIsLiked);
+  const [likeCount, setLikeCount] = useState(initialLikes);
+  const [isLiking, setIsLiking] = useState(false);
 
-  const handleLike = (e: React.MouseEvent) => {
+  // Sync with props
+  useEffect(() => {
+    setLiked(initialIsLiked);
+    setLikeCount(initialLikes);
+  }, [initialIsLiked, initialLikes]);
+
+  const handleLike = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (isLiking) return;
+
+    setIsLiking(true);
     const newLiked = !liked;
+    
+    // Optimistic update
     setLiked(newLiked);
     setLikeCount((prev) => (newLiked ? prev + 1 : prev - 1));
-    onLike?.(id);
+
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        // Revert optimistic update
+        setLiked(!newLiked);
+        setLikeCount((prev) => (!newLiked ? prev + 1 : prev - 1));
+        setIsLiking(false);
+        return;
+      }
+
+      if (newLiked) {
+        // Add like
+        const { error } = await supabase
+          .from("likes")
+          .insert({
+            user_id: user.id,
+            tweet_id: id,
+          });
+
+        if (error) {
+          // Revert optimistic update
+          setLiked(!newLiked);
+          setLikeCount((prev) => (!newLiked ? prev + 1 : prev - 1));
+          console.error("Error liking tweet:", error);
+        }
+      } else {
+        // Remove like
+        const { error } = await supabase
+          .from("likes")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("tweet_id", id);
+
+        if (error) {
+          // Revert optimistic update
+          setLiked(!newLiked);
+          setLikeCount((prev) => (!newLiked ? prev + 1 : prev - 1));
+          console.error("Error unliking tweet:", error);
+        }
+      }
+
+      onLike?.(id);
+      router.refresh();
+    } catch (err) {
+      // Revert optimistic update
+      setLiked(!newLiked);
+      setLikeCount((prev) => (!newLiked ? prev + 1 : prev - 1));
+      console.error("Error toggling like:", err);
+    } finally {
+      setIsLiking(false);
+    }
   };
 
   const handleTweetClick = () => {

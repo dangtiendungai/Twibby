@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import Button from "./Button";
 
 interface ProfileCardProps {
@@ -13,6 +15,7 @@ interface ProfileCardProps {
   following: number;
   isFollowing?: boolean;
   isOwnProfile?: boolean;
+  userId?: string; // User ID of the profile being viewed
   onFollow?: () => void;
   onUnfollow?: () => void;
 }
@@ -23,22 +26,89 @@ export default function ProfileCard({
   bio,
   avatar,
   joinedDate,
-  followers,
+  followers: initialFollowers,
   following,
-  isFollowing = false,
+  isFollowing: initialIsFollowing = false,
   isOwnProfile = false,
+  userId,
   onFollow,
   onUnfollow,
 }: ProfileCardProps) {
-  const [followingState, setFollowingState] = useState(isFollowing);
+  const router = useRouter();
+  const [followingState, setFollowingState] = useState(initialIsFollowing);
+  const [followersCount, setFollowersCount] = useState(initialFollowers);
+  const [isToggling, setIsToggling] = useState(false);
 
-  const handleFollowToggle = () => {
-    if (followingState) {
-      setFollowingState(false);
-      onUnfollow?.();
-    } else {
-      setFollowingState(true);
-      onFollow?.();
+  useEffect(() => {
+    setFollowingState(initialIsFollowing);
+    setFollowersCount(initialFollowers);
+  }, [initialIsFollowing, initialFollowers]);
+
+  const handleFollowToggle = async () => {
+    if (isOwnProfile || !userId || isToggling) return;
+
+    setIsToggling(true);
+    const newFollowingState = !followingState;
+    
+    // Optimistic update
+    setFollowingState(newFollowingState);
+    setFollowersCount((prev) => (newFollowingState ? prev + 1 : prev - 1));
+
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        // Revert optimistic update
+        setFollowingState(!newFollowingState);
+        setFollowersCount((prev) => (!newFollowingState ? prev + 1 : prev - 1));
+        setIsToggling(false);
+        return;
+      }
+
+      if (newFollowingState) {
+        // Follow
+        const { error } = await supabase
+          .from("follows")
+          .insert({
+            follower_id: user.id,
+            following_id: userId,
+          });
+
+        if (error) {
+          // Revert optimistic update
+          setFollowingState(!newFollowingState);
+          setFollowersCount((prev) => (!newFollowingState ? prev + 1 : prev - 1));
+          console.error("Error following user:", error);
+        } else {
+          onFollow?.();
+        }
+      } else {
+        // Unfollow
+        const { error } = await supabase
+          .from("follows")
+          .delete()
+          .eq("follower_id", user.id)
+          .eq("following_id", userId);
+
+        if (error) {
+          // Revert optimistic update
+          setFollowingState(!newFollowingState);
+          setFollowersCount((prev) => (!newFollowingState ? prev + 1 : prev - 1));
+          console.error("Error unfollowing user:", error);
+        } else {
+          onUnfollow?.();
+        }
+      }
+
+      router.refresh();
+    } catch (err) {
+      // Revert optimistic update
+      setFollowingState(!newFollowingState);
+      setFollowersCount((prev) => (!newFollowingState ? prev + 1 : prev - 1));
+      console.error("Error toggling follow:", err);
+    } finally {
+      setIsToggling(false);
     }
   };
 
@@ -70,6 +140,7 @@ export default function ProfileCard({
               color={followingState ? "gray" : "primary"}
               rounded="full"
               onClick={handleFollowToggle}
+              disabled={isToggling}
               className="font-semibold"
             >
               {followingState ? "Following" : "Follow"}
@@ -100,7 +171,7 @@ export default function ProfileCard({
           </span>
           <span>
             <span className="font-semibold text-gray-900 dark:text-gray-100">
-              {followers}
+              {followersCount}
             </span>{" "}
             Followers
           </span>

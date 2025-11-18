@@ -1,65 +1,156 @@
-import Sidebar from "../../../components/Sidebar";
+import { Suspense } from "react";
+import { notFound } from "next/navigation";
 import ProfileCard from "../../../components/ProfileCard";
 import Tweet from "../../../components/Tweet";
 import Button from "../../../components/Button";
-import { Suspense } from "react";
+import { createClient } from "@/lib/supabase/server";
 
-// Mock data - will be replaced with Supabase data later
-const mockProfile = {
-  username: "johndoe",
-  name: "John Doe",
-  bio: "Software developer, coffee enthusiast, and occasional writer. Building cool things one line of code at a time.",
-  joinedDate: "2024-01-15",
-  followers: 1234,
-  following: 567,
-  isOwnProfile: false,
-};
+async function getUserProfile(username: string) {
+  try {
+    const supabase = await createClient();
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
 
-const mockTweets = [
-  {
-    id: "1",
-    content:
-      "Just launched my new project! Excited to share it with everyone. 🚀",
-    author: {
-      username: "johndoe",
-      name: "John Doe",
-    },
-    createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-    likes: 42,
-    isLiked: false,
-  },
-  {
-    id: "2",
-    content:
-      "Beautiful sunset today! Sometimes you just need to stop and appreciate the little things in life. 🌅",
-    author: {
-      username: "johndoe",
-      name: "John Doe",
-    },
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-    likes: 128,
-    isLiked: true,
-  },
-];
+    // Get profile by username
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("username", username.toLowerCase())
+      .single();
 
-interface UserProfilePageProps {
-  params: {
-    username: string;
-  };
+    if (profileError || !profile) {
+      return null;
+    }
+
+    // Get follower/following counts
+    const { count: followersCount } = await supabase
+      .from("follows")
+      .select("*", { count: "exact", head: true })
+      .eq("following_id", profile.id);
+
+    const { count: followingCount } = await supabase
+      .from("follows")
+      .select("*", { count: "exact", head: true })
+      .eq("follower_id", profile.id);
+
+    // Check if current user is following this user
+    let isFollowing = false;
+    if (currentUser) {
+      const { data: followData } = await supabase
+        .from("follows")
+        .select("id")
+        .eq("follower_id", currentUser.id)
+        .eq("following_id", profile.id)
+        .single();
+      
+      isFollowing = !!followData;
+    }
+
+    return {
+      ...profile,
+      followers: followersCount || 0,
+      following: followingCount || 0,
+      isOwnProfile: currentUser?.id === profile.id,
+      isFollowing,
+    };
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    return null;
+  }
 }
 
-function UserProfileContent({ username }: { username: string }) {
-  // In real app, fetch user data based on username
+async function getUserTweets(userId: string) {
+  try {
+    const supabase = await createClient();
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+
+    const { data: tweets, error } = await supabase
+      .from("tweets")
+      .select(`
+        id,
+        content,
+        created_at,
+        user_id,
+        profiles!tweets_user_id_fkey (
+          id,
+          username,
+          name,
+          avatar_url
+        )
+      `)
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    if (error || !tweets) {
+      return [];
+    }
+
+    const tweetIds = tweets.map((t) => t.id);
+    
+    const { data: likesData } = await supabase
+      .from("likes")
+      .select("tweet_id")
+      .in("tweet_id", tweetIds);
+
+    let userLikes: string[] = [];
+    if (currentUser) {
+      const { data: userLikesData } = await supabase
+        .from("likes")
+        .select("tweet_id")
+        .eq("user_id", currentUser.id)
+        .in("tweet_id", tweetIds);
+      
+      userLikes = userLikesData?.map((l) => l.tweet_id) || [];
+    }
+
+    const likeCounts: Record<string, number> = {};
+    likesData?.forEach((like) => {
+      likeCounts[like.tweet_id] = (likeCounts[like.tweet_id] || 0) + 1;
+    });
+
+    return tweets.map((tweet) => {
+      const profile = tweet.profiles as any;
+      return {
+        id: tweet.id,
+        content: tweet.content,
+        author: {
+          username: profile?.username || "unknown",
+          name: profile?.name || "Unknown User",
+          avatar: profile?.avatar_url || undefined,
+        },
+        createdAt: tweet.created_at,
+        likes: likeCounts[tweet.id] || 0,
+        isLiked: userLikes.includes(tweet.id),
+      };
+    });
+  } catch (error) {
+    console.error("Error fetching tweets:", error);
+    return [];
+  }
+}
+
+async function UserProfileContent({ username }: { username: string }) {
+  const profile = await getUserProfile(username);
+
+  if (!profile) {
+    notFound();
+  }
+
+  const tweets = await getUserTweets(profile.id);
+
   return (
     <>
       <ProfileCard
-        username={mockProfile.username}
-        name={mockProfile.name}
-        bio={mockProfile.bio}
-        joinedDate={mockProfile.joinedDate}
-        followers={mockProfile.followers}
-        following={mockProfile.following}
-        isOwnProfile={mockProfile.isOwnProfile}
+        username={profile.username}
+        name={profile.name || ""}
+        bio={profile.bio || undefined}
+        avatar={profile.avatar_url || undefined}
+        joinedDate={profile.created_at}
+        followers={profile.followers}
+        following={profile.following}
+        isOwnProfile={profile.isOwnProfile}
+        isFollowing={profile.isFollowing}
+        userId={profile.id}
       />
       <div className="border-b border-gray-200 dark:border-gray-800">
         <div className="flex">
@@ -98,20 +189,34 @@ function UserProfileContent({ username }: { username: string }) {
         </div>
       </div>
       <div>
-        {mockTweets.map((tweet) => (
-          <Tweet
-            key={tweet.id}
-            id={tweet.id}
-            content={tweet.content}
-            author={tweet.author}
-            createdAt={tweet.createdAt}
-            likes={tweet.likes}
-            isLiked={tweet.isLiked}
-          />
-        ))}
+        {tweets.length === 0 ? (
+          <div className="p-8 text-center">
+            <p className="text-gray-500 dark:text-gray-400">
+              No tweets yet.
+            </p>
+          </div>
+        ) : (
+          tweets.map((tweet) => (
+            <Tweet
+              key={tweet.id}
+              id={tweet.id}
+              content={tweet.content}
+              author={tweet.author}
+              createdAt={tweet.createdAt}
+              likes={tweet.likes}
+              isLiked={tweet.isLiked}
+            />
+          ))
+        )}
       </div>
     </>
   );
+}
+
+interface UserProfilePageProps {
+  params: {
+    username: string;
+  };
 }
 
 export default function UserProfilePage({ params }: UserProfilePageProps) {

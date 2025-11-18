@@ -66,9 +66,21 @@ npm run dev
 
 ## Database Setup
 
-### Step 1: Create the Profiles Table
+### Step 1: Create All Tables
 
-Run this SQL in your Supabase SQL Editor:
+Run the SQL script in `supabase/schema.sql` in your Supabase SQL Editor. This will create:
+- `profiles` table (user profiles)
+- `tweets` table (posts/tweets)
+- `likes` table (tweet likes)
+- `follows` table (user follow relationships)
+- `bookmarks` table (saved tweets)
+- Helper functions for counts and checks
+
+You can copy the entire contents of `supabase/schema.sql` and run it in the Supabase SQL Editor.
+
+### Step 2: Create the Profiles Table (if not using schema.sql)
+
+If you prefer to run the profiles table separately first:
 
 ```sql
 -- Create profiles table
@@ -185,13 +197,35 @@ lib/
     └── server.ts   # Server client
 ```
 
-## Next Steps
+## Seeding Mock Data
 
-After setting up the profiles table, you can create additional tables for:
-- `tweets` - For storing tweets/posts
-- `likes` - For tweet likes
-- `follows` - For user follow relationships
-- `bookmarks` - For bookmarked tweets
+After creating the database schema, you can seed it with mock data:
+
+### Option 1: Using the TypeScript Seed Script
+
+1. Create at least one user account through the signup page
+2. Update `supabase/seed.ts` with your test user emails
+3. Set `SUPABASE_SERVICE_ROLE_KEY` in your environment (get it from Supabase Dashboard → Settings → API)
+4. Run: `npx tsx supabase/seed.ts`
+
+### Option 2: Using SQL
+
+1. Create test users through the signup page
+2. Get their user IDs from `auth.users` table
+3. Update `supabase/seed.sql` with real UUIDs
+4. Run the SQL in Supabase SQL Editor
+
+## Database Schema
+
+The database includes the following tables:
+
+- **profiles** - User profile information
+- **tweets** - Posts/tweets created by users
+- **likes** - User likes on tweets
+- **follows** - User follow relationships
+- **bookmarks** - User bookmarked tweets
+
+All tables have Row Level Security (RLS) enabled with appropriate policies.
 
 ## Learn More
 

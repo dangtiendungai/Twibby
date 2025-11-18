@@ -1,33 +1,134 @@
-import Sidebar from "../../components/Sidebar";
+import { Suspense } from "react";
+import { redirect } from "next/navigation";
 import Tweet from "../../components/Tweet";
+import { createClient } from "@/lib/supabase/server";
 
-// Mock bookmarked tweets
-const mockBookmarks = [
-  {
-    id: "1",
-    content:
-      "Just launched my new project! Excited to share it with everyone. 🚀",
-    author: {
-      username: "johndoe",
-      name: "John Doe",
-    },
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-    likes: 42,
-    isLiked: true,
-  },
-  {
-    id: "2",
-    content:
-      "Beautiful sunset today! Sometimes you just need to stop and appreciate the little things in life. 🌅",
-    author: {
-      username: "janedoe",
-      name: "Jane Doe",
-    },
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
-    likes: 128,
-    isLiked: false,
-  },
-];
+async function getBookmarks() {
+  try {
+    const supabase = await createClient();
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      redirect("/login");
+    }
+
+    // Get bookmarked tweets
+    const { data: bookmarks, error } = await supabase
+      .from("bookmarks")
+      .select(`
+        tweet_id,
+        created_at,
+        tweets!bookmarks_tweet_id_fkey (
+          id,
+          content,
+          created_at,
+          user_id,
+          profiles!tweets_user_id_fkey (
+            id,
+            username,
+            name,
+            avatar_url
+          )
+        )
+      `)
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    if (error || !bookmarks) {
+      return [];
+    }
+
+    // Get like counts and check if user has liked each tweet
+    const tweetIds = bookmarks
+      .map((b) => (b.tweets as any)?.id)
+      .filter(Boolean);
+
+    if (tweetIds.length === 0) return [];
+
+    const { data: likesData } = await supabase
+      .from("likes")
+      .select("tweet_id")
+      .in("tweet_id", tweetIds);
+
+    const { data: userLikesData } = await supabase
+      .from("likes")
+      .select("tweet_id")
+      .eq("user_id", user.id)
+      .in("tweet_id", tweetIds);
+
+    const userLikes = userLikesData?.map((l) => l.tweet_id) || [];
+
+    const likeCounts: Record<string, number> = {};
+    likesData?.forEach((like) => {
+      likeCounts[like.tweet_id] = (likeCounts[like.tweet_id] || 0) + 1;
+    });
+
+    return bookmarks
+      .map((bookmark) => {
+        const tweet = bookmark.tweets as any;
+        if (!tweet) return null;
+
+        const profile = tweet.profiles as any;
+        return {
+          id: tweet.id,
+          content: tweet.content,
+          author: {
+            username: profile?.username || "unknown",
+            name: profile?.name || "Unknown User",
+            avatar: profile?.avatar_url || undefined,
+          },
+          createdAt: tweet.created_at,
+          likes: likeCounts[tweet.id] || 0,
+          isLiked: userLikes.includes(tweet.id),
+        };
+      })
+      .filter(Boolean) as Array<{
+      id: string;
+      content: string;
+      author: { username: string; name: string; avatar?: string };
+      createdAt: string;
+      likes: number;
+      isLiked: boolean;
+    }>;
+  } catch (error) {
+    console.error("Error fetching bookmarks:", error);
+    return [];
+  }
+}
+
+async function BookmarksList() {
+  const bookmarks = await getBookmarks();
+
+  if (bookmarks.length === 0) {
+    return (
+      <div className="p-8 text-center">
+        <p className="text-gray-500 dark:text-gray-400 mb-2">
+          You haven't saved any tweets yet
+        </p>
+        <p className="text-sm text-gray-400 dark:text-gray-500">
+          When you bookmark tweets, they'll show up here
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {bookmarks.map((tweet) => (
+        <Tweet
+          key={tweet.id}
+          id={tweet.id}
+          content={tweet.content}
+          author={tweet.author}
+          createdAt={tweet.createdAt}
+          likes={tweet.likes}
+          isLiked={tweet.isLiked}
+        />
+      ))}
+    </div>
+  );
+}
 
 export default function BookmarksPage() {
   return (
@@ -38,31 +139,18 @@ export default function BookmarksPage() {
             Bookmarks
           </h2>
         </div>
-
-        <div>
-          {mockBookmarks.length > 0 ? (
-            mockBookmarks.map((tweet) => (
-              <Tweet
-                key={tweet.id}
-                id={tweet.id}
-                content={tweet.content}
-                author={tweet.author}
-                createdAt={tweet.createdAt}
-                likes={tweet.likes}
-                isLiked={tweet.isLiked}
-              />
-            ))
-          ) : (
+        <Suspense
+          fallback={
             <div className="p-8 text-center">
-              <p className="text-gray-500 dark:text-gray-400 mb-2">
-                You haven't saved any tweets yet
-              </p>
-              <p className="text-sm text-gray-400 dark:text-gray-500">
-                When you bookmark tweets, they'll show up here
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+              <p className="mt-4 text-gray-600 dark:text-gray-400">
+                Loading bookmarks...
               </p>
             </div>
-          )}
-        </div>
+          }
+        >
+          <BookmarksList />
+        </Suspense>
       </main>
     </>
   );
