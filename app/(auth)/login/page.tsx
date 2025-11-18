@@ -142,7 +142,7 @@ export default function LoginPage() {
                 size="sm"
                 onClick={() => setShowMagicLink(false)}
               >
-                ← Back to password login
+                Back to password login
               </Button>
             </form>
           )}

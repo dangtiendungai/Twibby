@@ -9,7 +9,7 @@ import TextField from "../../components/TextField";
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
-  
+
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -25,7 +25,9 @@ function ResetPasswordForm() {
     }
   };
 
-  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleConfirmPasswordChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setConfirmPassword(e.target.value);
     if (e.target.value !== password) {
       setPasswordError("Passwords do not match");
@@ -36,18 +38,18 @@ function ResetPasswordForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate passwords match
     if (password !== confirmPassword) {
       setPasswordError("Passwords do not match");
       return;
     }
-    
+
     if (password.length < 8) {
       setPasswordError("Password must be at least 8 characters");
       return;
     }
-    
+
     setPasswordError("");
     setIsLoading(true);
     // TODO: Implement Supabase password reset
@@ -97,9 +99,7 @@ function ResetPasswordForm() {
                 </p>
               </div>
               <Link href="/login">
-                <Button fullWidth>
-                  Go to login
-                </Button>
+                <Button fullWidth>Go to login</Button>
               </Link>
             </div>
           </div>
@@ -165,7 +165,7 @@ function ResetPasswordForm() {
                 href="/login"
                 className="text-sm font-medium text-blue-500 hover:text-blue-600"
               >
-                ← Back to login
+                Back to login
               </Link>
             </div>
           </form>
@@ -177,16 +177,17 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-black">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-black">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+            <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <ResetPasswordForm />
     </Suspense>
   );
 }
-

@@ -65,7 +65,7 @@ export default function ForgotPasswordPage() {
                   href="/login"
                   className="text-sm font-medium text-blue-500 hover:text-blue-600"
                 >
-                  ← Back to login
+                  Back to login
                 </Link>
               </div>
             </form>
@@ -112,7 +112,7 @@ export default function ForgotPasswordPage() {
                   href="/login"
                   className="block text-sm font-medium text-blue-500 hover:text-blue-600"
                 >
-                  ← Back to login
+                  Back to login
                 </Link>
               </div>
             </div>
