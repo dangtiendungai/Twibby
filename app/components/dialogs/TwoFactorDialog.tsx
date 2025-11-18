@@ -225,7 +225,7 @@ export default function TwoFactorDialog({
                   Or enter this code manually:
                 </p>
                 <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                  <code className="text-sm font-mono text-gray-900 dark:text-gray-100 break-all">
+                  <code className="text-sm font-sans text-gray-900 dark:text-gray-100 break-all">
                     {secret}
                   </code>
                 </div>
