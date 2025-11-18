@@ -18,6 +18,7 @@ import {
   LogOut,
 } from "lucide-react";
 import Button from "./Button";
+import PostDialog from "./PostDialog";
 
 const navigation = [
   { name: "Home", href: "/", icon: Home },
@@ -33,6 +34,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
+  const [isPostDialogOpen, setIsPostDialogOpen] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -120,6 +122,7 @@ export default function Sidebar() {
               rounded="full"
               fullWidth
               className="font-semibold"
+              onClick={() => setIsPostDialogOpen(true)}
             >
               <span className="hidden sm:inline">Post</span>
               <Plus className="w-5 h-5 sm:hidden" />
@@ -148,6 +151,11 @@ export default function Sidebar() {
           )}
         </div>
       </div>
+
+      <PostDialog
+        isOpen={isPostDialogOpen}
+        onClose={() => setIsPostDialogOpen(false)}
+      />
     </aside>
   );
 }

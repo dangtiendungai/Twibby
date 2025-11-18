@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import Button from "./Button";
 
@@ -71,8 +72,6 @@ export default function Dialog({
     };
   }, [isOpen]);
 
-  if (!isOpen) return null;
-
   const sizeClasses = {
     sm: "max-w-md",
     md: "max-w-lg",
@@ -87,16 +86,18 @@ export default function Dialog({
     }
   };
 
-  return (
+  if (!isOpen || typeof window === "undefined") return null;
+
+  const dialogContent = (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
       onClick={handleOverlayClick}
       role="dialog"
       aria-modal="true"
       aria-labelledby={title ? "dialog-title" : undefined}
     >
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity" />
 
       {/* Dialog */}
       <div
@@ -136,5 +137,7 @@ export default function Dialog({
       </div>
     </div>
   );
-}
 
+  // Use portal to render at document body level
+  return createPortal(dialogContent, document.body);
+}
