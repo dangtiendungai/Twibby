@@ -1,12 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Button from "./Button";
+import type { User } from "@supabase/supabase-js";
 
 interface TweetComposerProps {
   onTweetCreated?: () => void;
+}
+
+interface Profile {
+  avatar_url: string | null;
+  name: string | null;
 }
 
 export default function TweetComposer({ onTweetCreated }: TweetComposerProps) {
@@ -14,7 +20,38 @@ export default function TweetComposer({ onTweetCreated }: TweetComposerProps) {
   const [content, setContent] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const maxLength = 280;
+
+  useEffect(() => {
+    async function loadUserProfile() {
+      try {
+        const supabase = createClient();
+        const {
+          data: { user: currentUser },
+        } = await supabase.auth.getUser();
+
+        if (currentUser) {
+          setUser(currentUser);
+
+          const { data: profileData } = await supabase
+            .from("profiles")
+            .select("avatar_url, name")
+            .eq("id", currentUser.id)
+            .single();
+
+          if (profileData) {
+            setProfile(profileData);
+          }
+        }
+      } catch (err) {
+        console.error("Error loading user profile:", err);
+      }
+    }
+
+    loadUserProfile();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,9 +63,12 @@ export default function TweetComposer({ onTweetCreated }: TweetComposerProps) {
 
     try {
       const supabase = createClient();
-      
+
       // Get current user
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
       if (userError || !user) {
         setError("You must be logged in to post");
         setIsLoading(false);
@@ -36,12 +76,10 @@ export default function TweetComposer({ onTweetCreated }: TweetComposerProps) {
       }
 
       // Create tweet
-      const { error: tweetError } = await supabase
-        .from("tweets")
-        .insert({
-          user_id: user.id,
-          content: content.trim(),
-        });
+      const { error: tweetError } = await supabase.from("tweets").insert({
+        user_id: user.id,
+        content: content.trim(),
+      });
 
       if (tweetError) {
         console.error("Error creating tweet:", tweetError);
@@ -71,7 +109,21 @@ export default function TweetComposer({ onTweetCreated }: TweetComposerProps) {
           </div>
         )}
         <div className="flex gap-4">
-          <div className="w-12 h-12 rounded-full bg-gray-300 dark:bg-gray-700 flex-shrink-0"></div>
+          <div className="w-12 h-12 rounded-full bg-gray-300 dark:bg-gray-700 flex-shrink-0 overflow-hidden">
+            {profile?.avatar_url ? (
+              <img
+                src={profile.avatar_url}
+                alt={profile.name || "User avatar"}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-white text-lg font-semibold">
+                {profile?.name
+                  ? profile.name[0].toUpperCase()
+                  : user?.email?.[0].toUpperCase() || "U"}
+              </div>
+            )}
+          </div>
           <div className="flex-1">
             <textarea
               value={content}
@@ -88,7 +140,11 @@ export default function TweetComposer({ onTweetCreated }: TweetComposerProps) {
         </div>
         <div className="flex items-center justify-between pl-16">
           <div className="text-sm text-gray-500 dark:text-gray-400">
-            <span className={content.length > maxLength * 0.9 ? "text-orange-500" : ""}>
+            <span
+              className={
+                content.length > maxLength * 0.9 ? "text-orange-500" : ""
+              }
+            >
               {content.length}
             </span>
             /{maxLength}
@@ -98,7 +154,11 @@ export default function TweetComposer({ onTweetCreated }: TweetComposerProps) {
             variant="fill"
             color="primary"
             rounded="full"
-            disabled={content.trim().length === 0 || content.length > maxLength || isLoading}
+            disabled={
+              content.trim().length === 0 ||
+              content.length > maxLength ||
+              isLoading
+            }
             isLoading={isLoading}
             className="font-semibold"
           >
@@ -109,4 +169,3 @@ export default function TweetComposer({ onTweetCreated }: TweetComposerProps) {
     </div>
   );
 }
-
