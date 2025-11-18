@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
 import Button from "../../components/Button";
 import TextField from "../../components/TextField";
 
@@ -9,16 +10,34 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     setIsLoading(true);
-    // TODO: Implement Supabase password reset
-    console.log("Password reset requested for:", email);
-    setTimeout(() => {
-      setIsLoading(false);
+
+    try {
+      const supabase = createClient();
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+        email,
+        {
+          redirectTo: `${window.location.origin}/reset-password`,
+        }
+      );
+
+      if (resetError) {
+        setError(resetError.message);
+        setIsLoading(false);
+        return;
+      }
+
       setIsSubmitted(true);
-    }, 1000);
+      setIsLoading(false);
+    } catch (err) {
+      setError("An unexpected error occurred. Please try again.");
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -37,6 +56,11 @@ export default function ForgotPasswordPage() {
         </div>
 
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-gray-800">
+          {error && !isSubmitted && (
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            </div>
+          )}
           {!isSubmitted ? (
             <form className="space-y-6" onSubmit={handleSubmit}>
               <TextField
@@ -47,9 +71,13 @@ export default function ForgotPasswordPage() {
                 autoComplete="email"
                 required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setError("");
+                }}
                 placeholder="you@example.com"
                 helperText="Enter your email address and we'll send you a link to reset your password."
+                error={error ? error : undefined}
               />
 
               <Button

@@ -1,19 +1,22 @@
 "use client";
 
 import { useState, Suspense } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import Button from "../../components/Button";
 import TextField from "../../components/TextField";
 
 function ResetPasswordForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const token = searchParams.get("token");
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [passwordError, setPasswordError] = useState("");
+  const [error, setError] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,6 +41,7 @@ function ResetPasswordForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
 
     // Validate passwords match
     if (password !== confirmPassword) {
@@ -52,12 +56,30 @@ function ResetPasswordForm() {
 
     setPasswordError("");
     setIsLoading(true);
-    // TODO: Implement Supabase password reset
-    console.log("Password reset with token:", token);
-    setTimeout(() => {
-      setIsLoading(false);
+
+    try {
+      const supabase = createClient();
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: password,
+      });
+
+      if (updateError) {
+        setError(updateError.message);
+        setIsLoading(false);
+        return;
+      }
+
       setIsSuccess(true);
-    }, 1000);
+      setIsLoading(false);
+      
+      // Redirect to login after a short delay
+      setTimeout(() => {
+        router.push("/login");
+      }, 2000);
+    } catch (err) {
+      setError("An unexpected error occurred. Please try again.");
+      setIsLoading(false);
+    }
   };
 
   if (isSuccess) {
@@ -124,6 +146,11 @@ function ResetPasswordForm() {
         </div>
 
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-gray-800">
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            </div>
+          )}
           <form className="space-y-6" onSubmit={handleSubmit}>
             <TextField
               id="password"
@@ -155,7 +182,6 @@ function ResetPasswordForm() {
               type="submit"
               fullWidth
               isLoading={isLoading}
-              disabled={!token}
             >
               Reset password
             </Button>

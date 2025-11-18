@@ -1,31 +1,75 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
 import Checkbox from "../../components/Checkbox";
 import Button from "../../components/Button";
 import TextField from "../../components/TextField";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showMagicLink, setShowMagicLink] = useState(false);
+  const [error, setError] = useState("");
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     setIsLoading(true);
-    // TODO: Implement Supabase auth
-    console.log("Email login:", email, password);
-    setTimeout(() => setIsLoading(false), 1000);
+
+    try {
+      const supabase = createClient();
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        setError(signInError.message);
+        setIsLoading(false);
+        return;
+      }
+
+      // Redirect to home page on success
+      router.push("/");
+      router.refresh();
+    } catch (err) {
+      setError("An unexpected error occurred. Please try again.");
+      setIsLoading(false);
+    }
   };
 
   const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     setIsLoading(true);
-    // TODO: Implement Supabase magic link
-    console.log("Magic link sent to:", email);
-    setTimeout(() => setIsLoading(false), 1000);
+
+    try {
+      const supabase = createClient();
+      const { error: magicLinkError } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/`,
+        },
+      });
+
+      if (magicLinkError) {
+        setError(magicLinkError.message);
+        setIsLoading(false);
+        return;
+      }
+
+      setMagicLinkSent(true);
+      setIsLoading(false);
+    } catch (err) {
+      setError("An unexpected error occurred. Please try again.");
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -50,6 +94,11 @@ export default function LoginPage() {
         </div>
 
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-gray-800">
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            </div>
+          )}
           {!showMagicLink ? (
             <form className="space-y-6" onSubmit={handleEmailLogin}>
               <TextField
@@ -60,7 +109,10 @@ export default function LoginPage() {
                 autoComplete="email"
                 required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setError("");
+                }}
                 placeholder="you@example.com"
               />
 
@@ -117,6 +169,48 @@ export default function LoginPage() {
                 Sign in with Magic Link
               </Button>
             </form>
+          ) : magicLinkSent ? (
+            <div className="space-y-6 text-center">
+              <div className="w-16 h-16 mx-auto bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                <svg
+                  className="w-8 h-8 text-blue-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                  Check your email
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  We've sent a magic link to <strong>{email}</strong>
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Click the link in the email to sign in. The link will expire in 1 hour.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                fullWidth
+                size="sm"
+                onClick={() => {
+                  setShowMagicLink(false);
+                  setMagicLinkSent(false);
+                  setEmail("");
+                }}
+              >
+                Back to password login
+              </Button>
+            </div>
           ) : (
             <form className="space-y-6" onSubmit={handleMagicLink}>
               <TextField
@@ -127,7 +221,10 @@ export default function LoginPage() {
                 autoComplete="email"
                 required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setError("");
+                }}
                 placeholder="you@example.com"
               />
 
@@ -140,7 +237,10 @@ export default function LoginPage() {
                 variant="ghost"
                 fullWidth
                 size="sm"
-                onClick={() => setShowMagicLink(false)}
+                onClick={() => {
+                  setShowMagicLink(false);
+                  setError("");
+                }}
               >
                 Back to password login
               </Button>

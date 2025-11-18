@@ -1,36 +1,206 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Twibby - A Twitter-like Social Platform
+
+Twibby is a modern social media platform built with Next.js and Supabase, inspired by Twitter. Connect, share, and discover on Twibby.
+
+## Features
+
+- 🔐 **Authentication**: Email/password and magic link authentication
+- 👤 **User Profiles**: Customizable profiles with username, bio, avatar, and more
+- 📝 **Tweets**: Create and share text-based posts
+- ❤️ **Likes**: Like and interact with tweets
+- 👥 **Follows**: Follow other users and build your network
+- 🔖 **Bookmarks**: Save tweets for later
+- 🔔 **Notifications**: Stay updated with real-time notifications
+- 🎨 **Modern UI**: Beautiful, responsive design with dark mode support
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Database & Auth**: Supabase
+- **Styling**: Tailwind CSS
+- **Icons**: Lucide React
+- **Font**: Google Sarala
+- **Language**: TypeScript
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- Node.js 18+ installed
+- A Supabase account ([sign up here](https://supabase.com))
+
+### Installation
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <your-repo-url>
+cd Twibby
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Set up environment variables:
+   - Copy `.env.example` to `.env.local`
+   - Fill in your Supabase credentials:
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+   You can find these values in your Supabase project settings (Settings → API).
+
+4. Set up the database:
+   - Open your Supabase dashboard
+   - Go to SQL Editor
+   - Run the SQL script below to create the required tables
+
+5. Run the development server:
+```bash
+npm run dev
+```
+
+6. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Database Setup
+
+### Step 1: Create the Profiles Table
+
+Run this SQL in your Supabase SQL Editor:
+
+```sql
+-- Create profiles table
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+  username TEXT UNIQUE NOT NULL,
+  name TEXT,
+  email TEXT,
+  bio TEXT,
+  avatar_url TEXT,
+  banner_url TEXT,
+  location TEXT,
+  website TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+-- Create index on username for faster lookups
+CREATE INDEX IF NOT EXISTS profiles_username_idx ON public.profiles(username);
+
+-- Enable Row Level Security
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+-- Create policies
+-- Allow users to read all profiles
+CREATE POLICY "Public profiles are viewable by everyone"
+  ON public.profiles
+  FOR SELECT
+  USING (true);
+
+-- Allow users to insert their own profile
+CREATE POLICY "Users can insert their own profile"
+  ON public.profiles
+  FOR INSERT
+  WITH CHECK (auth.uid() = id);
+
+-- Allow users to update their own profile
+CREATE POLICY "Users can update their own profile"
+  ON public.profiles
+  FOR UPDATE
+  USING (auth.uid() = id);
+
+-- Create a function to automatically create a profile when a user signs up
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, username, name, email)
+  VALUES (
+    NEW.id,
+    COALESCE(NEW.raw_user_meta_data->>'username', 'user_' || substr(NEW.id::text, 1, 8)),
+    COALESCE(NEW.raw_user_meta_data->>'name', ''),
+    NEW.email
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Create a trigger to call the function when a new user is created
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+```
+
+### Step 2: Verify the Setup
+
+1. Go to your Supabase dashboard
+2. Navigate to Table Editor
+3. You should see the `profiles` table
+4. Check that RLS policies are enabled (Settings → API → Row Level Security)
+
+### Step 3: Test
+
+Try signing up a new user. The profile should be created automatically via the trigger, or manually if the trigger doesn't work.
+
+## Troubleshooting
+
+### Profile creation fails during signup
+
+If you see "Profile creation error" in the console:
+
+1. **Check if the table exists**: Go to Table Editor in Supabase
+2. **Check RLS policies**: Make sure the insert policy allows users to insert their own profile
+3. **Check the trigger**: The trigger should automatically create a profile, so manual creation might fail if the profile already exists
+4. **Check console logs**: The improved error logging will show more details about what went wrong
+
+### Username already exists
+
+The username field has a UNIQUE constraint. If a username is taken, you'll need to choose a different one.
+
+## Project Structure
+
+```
+app/
+├── (app)/          # Authenticated pages (with sidebar)
+│   ├── page.tsx    # Home feed
+│   ├── explore/    # Explore page
+│   ├── profile/    # User profile pages
+│   └── ...
+├── (auth)/         # Authentication pages
+│   ├── login/      # Login page
+│   ├── signup/     # Signup page
+│   └── ...
+├── components/     # Reusable components
+│   ├── Button.tsx
+│   ├── Dialog.tsx
+│   ├── TextField.tsx
+│   └── ...
+└── auth/           # Auth callbacks
+    └── callback/   # OAuth/magic link callback
+
+lib/
+└── supabase/       # Supabase client utilities
+    ├── client.ts   # Browser client
+    └── server.ts   # Server client
+```
+
+## Next Steps
+
+After setting up the profiles table, you can create additional tables for:
+- `tweets` - For storing tweets/posts
+- `likes` - For tweet likes
+- `follows` - For user follow relationships
+- `bookmarks` - For bookmarked tweets
 
 ## Learn More
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Supabase Documentation](https://supabase.com/docs)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Make sure to add your environment variables in Vercel's project settings.
