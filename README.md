@@ -129,7 +129,8 @@ CREATE POLICY "Users can insert their own profile"
 CREATE POLICY "Users can update their own profile"
   ON public.profiles
   FOR UPDATE
-  USING (auth.uid() = id);
+  USING (auth.uid() = id)
+  WITH CHECK (auth.uid() = id);
 
 -- Create a function to automatically create a profile when a user signs up
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -163,7 +164,97 @@ CREATE TRIGGER on_auth_user_created
 
 Try signing up a new user. The profile should be created automatically via the trigger, or manually if the trigger doesn't work.
 
+## Storage Setup (for Avatar Uploads)
+
+To enable avatar uploads in the settings page, you need to create a Supabase Storage bucket:
+
+### Step 1: Create the Storage Bucket
+
+1. Go to your Supabase dashboard
+2. Navigate to **Storage** in the left sidebar
+3. Click **New bucket**
+4. Name it `avatars`
+5. Make it **Public** (so avatars can be accessed via URL)
+6. Click **Create bucket**
+
+### Step 2: Set Up Storage Policies
+
+After creating the bucket, you need to set up policies to allow users to upload and manage their own avatars. Go to **Storage** → **Policies** → **avatars** and create the following policies:
+
+**Policy 1: Allow authenticated users to upload avatars**
+```sql
+CREATE POLICY "Users can upload their own avatars"
+ON storage.objects
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'avatars' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+```
+
+**Policy 2: Allow authenticated users to update their own avatars**
+```sql
+CREATE POLICY "Users can update their own avatars"
+ON storage.objects
+FOR UPDATE
+TO authenticated
+USING (
+  bucket_id = 'avatars' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+```
+
+**Policy 3: Allow authenticated users to delete their own avatars**
+```sql
+CREATE POLICY "Users can delete their own avatars"
+ON storage.objects
+FOR DELETE
+TO authenticated
+USING (
+  bucket_id = 'avatars' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+```
+
+**Policy 4: Allow public read access to avatars**
+```sql
+CREATE POLICY "Public avatar access"
+ON storage.objects
+FOR SELECT
+TO public
+USING (bucket_id = 'avatars');
+```
+
+### Step 3: Verify Storage Setup
+
+1. Go to **Storage** → **avatars** in your Supabase dashboard
+2. Try uploading an avatar from the Settings page
+3. The file should appear in the bucket under a folder named with the user's UUID
+
 ## Troubleshooting
+
+### "new row violates row-level security policy" error when updating profile
+
+If you see this error when trying to upload an avatar or update your profile:
+
+1. **Check your RLS policy**: The UPDATE policy on the `profiles` table needs both `USING` and `WITH CHECK` clauses.
+
+2. **Fix the policy**: Run the SQL script in `supabase/fix-rls-policy.sql` in your Supabase SQL Editor, or manually update the policy:
+
+```sql
+-- Drop the existing policy
+DROP POLICY IF EXISTS "Users can update their own profile" ON public.profiles;
+
+-- Create the updated policy with both clauses
+CREATE POLICY "Users can update their own profile"
+  ON public.profiles
+  FOR UPDATE
+  USING (auth.uid() = id)
+  WITH CHECK (auth.uid() = id);
+```
+
+3. **Verify**: After running the fix, try uploading an avatar again from the Settings page.
 
 ### Profile creation fails during signup
 

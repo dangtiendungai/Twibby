@@ -1,14 +1,115 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import Button from "../../components/Button";
 import TextField from "../../components/TextField";
 import Checkbox from "../../components/Checkbox";
 import ConfirmDialog from "../../components/ConfirmDialog";
+import AvatarUploader from "../../components/AvatarUploader";
+import type { User } from "@supabase/supabase-js";
+
+interface Profile {
+  id: string;
+  username: string;
+  name: string | null;
+  email: string | null;
+  bio: string | null;
+  avatar_url: string | null;
+}
 
 export default function SettingsPage() {
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    async function loadProfile() {
+      try {
+        const supabase = createClient();
+        const {
+          data: { user: currentUser },
+        } = await supabase.auth.getUser();
+
+        if (!currentUser) {
+          router.push("/login");
+          return;
+        }
+
+        setUser(currentUser);
+
+        const { data: profileData, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", currentUser.id)
+          .single();
+
+        if (error) {
+          console.error("Error fetching profile:", error);
+          return;
+        }
+
+        setProfile(profileData);
+      } catch (error) {
+        console.error("Error loading profile:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadProfile();
+  }, [router]);
+
+  const handleAvatarUpload = (avatarUrl: string) => {
+    if (profile) {
+      setProfile({ ...profile, avatar_url: avatarUrl });
+    }
+    router.refresh();
+  };
+
+  const handleSaveProfile = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!user || !profile) return;
+
+    setIsSaving(true);
+    try {
+      const supabase = createClient();
+      const formData = new FormData(e.currentTarget);
+      
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          name: formData.get("name") as string,
+          bio: formData.get("bio") as string,
+        })
+        .eq("id", user.id);
+
+      if (error) {
+        console.error("Error updating profile:", error);
+        alert("Failed to update profile. Please try again.");
+        return;
+      }
+
+      setProfile({
+        ...profile,
+        name: formData.get("name") as string,
+        bio: formData.get("bio") as string,
+      });
+
+      router.refresh();
+      alert("Profile updated successfully!");
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      alert("Failed to update profile. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleDeleteAccount = async () => {
     setIsDeleting(true);
@@ -19,6 +120,21 @@ export default function SettingsPage() {
       setIsDeleteDialogOpen(false);
     }, 2000);
   };
+
+  if (isLoading) {
+    return (
+      <main className="flex-1 border-x border-gray-200 dark:border-gray-800 min-w-0">
+        <div className="p-8 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading settings...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!user || !profile) {
+    return null;
+  }
 
   return (
     <>
@@ -40,17 +156,18 @@ export default function SettingsPage() {
                 id="email"
                 label="Email"
                 type="email"
-                defaultValue="user@example.com"
-                helperText="Your email address"
+                defaultValue={user.email || ""}
+                helperText="Your email address (cannot be changed here)"
+                disabled
               />
               <TextField
                 id="username"
                 label="Username"
                 type="text"
-                defaultValue="johndoe"
-                helperText="Your unique username"
+                defaultValue={profile.username || ""}
+                helperText="Your unique username (cannot be changed here)"
+                disabled
               />
-              <Button>Save changes</Button>
             </div>
           </section>
 
@@ -60,24 +177,45 @@ export default function SettingsPage() {
               Profile
             </h3>
             <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6 space-y-4">
-              <TextField
-                id="name"
-                label="Display Name"
-                type="text"
-                defaultValue="John Doe"
-              />
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Bio
+                  Profile Picture
                 </label>
-                <textarea
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition resize-none"
-                  rows={4}
-                  placeholder="Tell us about yourself"
-                  defaultValue="Software developer, coffee enthusiast, and occasional writer."
+                <AvatarUploader
+                  currentAvatarUrl={profile.avatar_url}
+                  userId={user.id}
+                  onUploadComplete={handleAvatarUpload}
+                  size="md"
                 />
               </div>
-              <Button>Update profile</Button>
+              <form onSubmit={handleSaveProfile} className="space-y-4">
+                <TextField
+                  id="name"
+                  name="name"
+                  label="Display Name"
+                  type="text"
+                  defaultValue={profile.name || ""}
+                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Bio
+                  </label>
+                  <textarea
+                    name="bio"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition resize-none"
+                    rows={4}
+                    placeholder="Tell us about yourself"
+                    defaultValue={profile.bio || ""}
+                    maxLength={160}
+                  />
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    {(profile.bio?.length || 0)}/160 characters
+                  </p>
+                </div>
+                <Button type="submit" isLoading={isSaving}>
+                  Update profile
+                </Button>
+              </form>
             </div>
           </section>
 
