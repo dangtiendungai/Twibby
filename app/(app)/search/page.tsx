@@ -7,6 +7,7 @@ import Tweet from "../../components/Tweet";
 import Button from "../../components/Button";
 import { Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { fetchProfileMap } from "@/lib/supabase/profile-helpers";
 
 interface SearchUser {
   id: string;
@@ -51,7 +52,9 @@ export default function SearchPage() {
       setIsLoading(true);
       try {
         const supabase = createClient();
-        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        const {
+          data: { user: currentUser },
+        } = await supabase.auth.getUser();
 
         if (activeTab === "people") {
           // Search users
@@ -94,23 +97,18 @@ export default function SearchPage() {
           // Search tweets
           const { data: tweetData, error } = await supabase
             .from("tweets")
-            .select(`
+            .select(
+              `
               id,
               content,
               created_at,
-              user_id,
-              profiles!tweets_user_id_fkey (
-                id,
-                username,
-                name,
-                avatar_url
-              )
-            `)
-            .ilike("content", `%${searchQuery}%`)
-            .order(
-              activeTab === "latest" ? "created_at" : "created_at",
-              { ascending: false }
+              user_id
+            `
             )
+            .ilike("content", `%${searchQuery}%`)
+            .order(activeTab === "latest" ? "created_at" : "created_at", {
+              ascending: false,
+            })
             .limit(50);
 
           if (error) {
@@ -118,6 +116,11 @@ export default function SearchPage() {
             setTweets([]);
           } else if (tweetData) {
             const tweetIds = tweetData.map((t) => t.id);
+
+            const profileMap = await fetchProfileMap(
+              supabase,
+              tweetData.map((tweet) => tweet.user_id)
+            );
 
             const { data: likesData } = await supabase
               .from("likes")
@@ -142,7 +145,7 @@ export default function SearchPage() {
 
             setTweets(
               tweetData.map((tweet) => {
-                const profile = tweet.profiles as any;
+                const profile = profileMap.get(tweet.user_id);
                 return {
                   id: tweet.id,
                   content: tweet.content,

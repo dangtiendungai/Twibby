@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef, useState } from "react";
+import { forwardRef, useId, useState } from "react";
 import { Check } from "lucide-react";
 
 interface CheckboxProps
@@ -26,6 +26,7 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     const [isChecked, setIsChecked] = useState(defaultChecked || false);
     const isControlled = checked !== undefined;
     const checkedState = isControlled ? checked : isChecked;
+    const generatedId = useId();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (!isControlled) {
@@ -34,8 +35,7 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
       onChange?.(e);
     };
 
-    const checkboxId =
-      id || `checkbox-${Math.random().toString(36).substr(2, 9)}`;
+    const checkboxId = id || generatedId;
 
     return (
       <div className="flex flex-col">

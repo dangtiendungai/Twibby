@@ -191,7 +191,7 @@ export default function LoginPage() {
                   Check your email
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  We've sent a magic link to <strong>{email}</strong>
+                  We&apos;ve sent a magic link to <strong>{email}</strong>
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   Click the link in the email to sign in. The link will expire in 1 hour.

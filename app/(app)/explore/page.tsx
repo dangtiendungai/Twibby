@@ -1,33 +1,37 @@
 import { Suspense } from "react";
 import Tweet from "../../components/Tweet";
 import { createClient } from "@/lib/supabase/server";
+import { fetchProfileMap } from "@/lib/supabase/profile-helpers";
 
 async function getExploreTweets() {
   try {
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     // Fetch all tweets (explore shows everything)
     const { data: tweets, error } = await supabase
       .from("tweets")
-      .select(`
+      .select(
+        `
         id,
         content,
         created_at,
-        user_id,
-        profiles!tweets_user_id_fkey (
-          id,
-          username,
-          name,
-          avatar_url
-        )
-      `)
+        user_id
+      `
+      )
       .order("created_at", { ascending: false })
       .limit(50);
 
     if (error || !tweets) {
       return [];
     }
+
+    const profileMap = await fetchProfileMap(
+      supabase,
+      tweets.map((t) => t.user_id)
+    );
 
     const tweetIds = tweets.map((t) => t.id);
 
@@ -53,7 +57,7 @@ async function getExploreTweets() {
     });
 
     return tweets.map((tweet) => {
-      const profile = tweet.profiles as any;
+      const profile = profileMap.get(tweet.user_id);
       return {
         id: tweet.id,
         content: tweet.content,

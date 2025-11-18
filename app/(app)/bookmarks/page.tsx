@@ -2,49 +2,54 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import Tweet from "../../components/Tweet";
 import { createClient } from "@/lib/supabase/server";
+import { fetchProfileMap } from "@/lib/supabase/profile-helpers";
 
 async function getBookmarks() {
   try {
     const supabase = await createClient();
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
     if (userError || !user) {
       redirect("/login");
     }
 
-    // Get bookmarked tweets
+    // Get bookmark entries
     const { data: bookmarks, error } = await supabase
       .from("bookmarks")
-      .select(`
+      .select(
+        `
         tweet_id,
-        created_at,
-        tweets!bookmarks_tweet_id_fkey (
-          id,
-          content,
-          created_at,
-          user_id,
-          profiles!tweets_user_id_fkey (
-            id,
-            username,
-            name,
-            avatar_url
-          )
-        )
-      `)
+        created_at
+      `
+      )
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(50);
 
-    if (error || !bookmarks) {
+    if (error || !bookmarks || bookmarks.length === 0) {
       return [];
     }
 
-    // Get like counts and check if user has liked each tweet
-    const tweetIds = bookmarks
-      .map((b) => (b.tweets as any)?.id)
-      .filter(Boolean);
+    const tweetIds = bookmarks.map((b) => b.tweet_id);
 
-    if (tweetIds.length === 0) return [];
+    const { data: tweets, error: tweetsError } = await supabase
+      .from("tweets")
+      .select("id, content, created_at, user_id")
+      .in("id", tweetIds);
+
+    if (tweetsError || !tweets || tweets.length === 0) {
+      return [];
+    }
+
+    const tweetMap = new Map(tweets.map((tweet) => [tweet.id, tweet]));
+
+    const profileMap = await fetchProfileMap(
+      supabase,
+      tweets.map((t) => t.user_id)
+    );
 
     const { data: likesData } = await supabase
       .from("likes")
@@ -66,10 +71,10 @@ async function getBookmarks() {
 
     return bookmarks
       .map((bookmark) => {
-        const tweet = bookmark.tweets as any;
+        const tweet = tweetMap.get(bookmark.tweet_id);
         if (!tweet) return null;
 
-        const profile = tweet.profiles as any;
+        const profile = profileMap.get(tweet.user_id);
         return {
           id: tweet.id,
           content: tweet.content,
@@ -104,10 +109,10 @@ async function BookmarksList() {
     return (
       <div className="p-8 text-center">
         <p className="text-gray-500 dark:text-gray-400 mb-2">
-          You haven't saved any tweets yet
+          You haven&apos;t saved any tweets yet
         </p>
         <p className="text-sm text-gray-400 dark:text-gray-500">
-          When you bookmark tweets, they'll show up here
+          When you bookmark tweets, they&apos;ll show up here
         </p>
       </div>
     );

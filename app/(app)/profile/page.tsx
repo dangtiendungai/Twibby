@@ -4,6 +4,7 @@ import ProfileCard from "../../components/ProfileCard";
 import Tweet from "../../components/Tweet";
 import Button from "../../components/Button";
 import { createClient } from "@/lib/supabase/server";
+import { fetchProfileMap } from "@/lib/supabase/profile-helpers";
 
 async function getCurrentUserProfile() {
   try {
@@ -67,13 +68,7 @@ async function getUserTweets(userId: string) {
         id,
         content,
         created_at,
-        user_id,
-        profiles!tweets_user_id_fkey (
-          id,
-          username,
-          name,
-          avatar_url
-        )
+        user_id
       `
       )
       .eq("user_id", userId)
@@ -83,6 +78,11 @@ async function getUserTweets(userId: string) {
     if (error || !tweets) {
       return [];
     }
+
+    const profileMap = await fetchProfileMap(
+      supabase,
+      tweets.map((t) => t.user_id)
+    );
 
     // Get like counts and check if user has liked each tweet
     const tweetIds = tweets.map((t) => t.id);
@@ -109,7 +109,7 @@ async function getUserTweets(userId: string) {
     });
 
     return tweets.map((tweet) => {
-      const profile = tweet.profiles as any;
+      const profile = profileMap.get(tweet.user_id);
       return {
         id: tweet.id,
         content: tweet.content,

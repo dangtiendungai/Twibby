@@ -204,7 +204,11 @@ function randomPastDate(days = 30) {
   return new Date(now - offset).toISOString();
 }
 
-async function getOrCreateUser(email: string, password: string, metadata: any) {
+async function getOrCreateUser(
+  email: string,
+  password: string,
+  metadata: Record<string, string>
+) {
   const { data, error } = await supabase.auth.admin.createUser({
     email,
     password,
@@ -221,7 +225,7 @@ async function getOrCreateUser(email: string, password: string, metadata: any) {
 
 async function batchInsert(
   table: string,
-  rows: Record<string, any>[],
+  rows: Record<string, unknown>[],
   chunkSize = 100
 ) {
   for (let i = 0; i < rows.length; i += chunkSize) {
@@ -416,8 +420,10 @@ async function seed() {
     console.log(
       "You can now log in with any generated account (email: username@twibby.dev, password: Password123!<index>)"
     );
-  } catch (error: any) {
-    console.error("❌ Seed process failed:", error.message);
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Unknown seed error occurred";
+    console.error("❌ Seed process failed:", message);
     process.exit(1);
   }
 }

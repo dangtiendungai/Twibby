@@ -51,7 +51,7 @@ export default function ForgotPasswordPage() {
             Forgot your password?
           </h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            No worries, we'll send you reset instructions.
+            No worries, we&apos;ll send you reset instructions.
           </p>
         </div>
 
@@ -76,7 +76,7 @@ export default function ForgotPasswordPage() {
                   setError("");
                 }}
                 placeholder="you@example.com"
-                helperText="Enter your email address and we'll send you a link to reset your password."
+                helperText="Enter your email address and we&apos;ll send you a link to reset your password."
                 error={error ? error : undefined}
               />
 
@@ -119,10 +119,10 @@ export default function ForgotPasswordPage() {
                   Check your email
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  We've sent a password reset link to <strong>{email}</strong>
+                  We&apos;ve sent a password reset link to <strong>{email}</strong>
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Didn't receive the email? Check your spam folder or try again.
+                  Didn&apos;t receive the email? Check your spam folder or try again.
                 </p>
               </div>
               <div className="space-y-3">

@@ -53,11 +53,12 @@ export default function SignupPage() {
       let supabase;
       try {
         supabase = createClient();
-      } catch (clientError: any) {
-        setError(
-          clientError.message ||
-            "Failed to initialize authentication. Please check your .env.local file and ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set."
-        );
+      } catch (clientError: unknown) {
+        const message =
+          clientError instanceof Error
+            ? clientError.message
+            : "Failed to initialize authentication. Please check your .env.local file and ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set.";
+        setError(message);
         setIsLoading(false);
         return;
       }

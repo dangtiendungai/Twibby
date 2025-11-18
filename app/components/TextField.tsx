@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef, InputHTMLAttributes } from "react";
+import { forwardRef, InputHTMLAttributes, useId } from "react";
 
 interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -22,7 +22,8 @@ const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
     },
     ref
   ) => {
-    const fieldId = id || `field-${Math.random().toString(36).substr(2, 9)}`;
+    const generatedId = useId();
+    const fieldId = id || generatedId;
 
     const baseInputStyles =
       "px-4 py-3 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition";

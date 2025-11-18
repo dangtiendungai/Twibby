@@ -4,11 +4,14 @@ import ProfileCard from "../../../components/ProfileCard";
 import Tweet from "../../../components/Tweet";
 import Button from "../../../components/Button";
 import { createClient } from "@/lib/supabase/server";
+import { fetchProfileMap } from "@/lib/supabase/profile-helpers";
 
 async function getUserProfile(username: string) {
   try {
     const supabase = await createClient();
-    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    const {
+      data: { user: currentUser },
+    } = await supabase.auth.getUser();
 
     // Get profile by username
     const { data: profile, error: profileError } = await supabase
@@ -41,7 +44,7 @@ async function getUserProfile(username: string) {
         .eq("follower_id", currentUser.id)
         .eq("following_id", profile.id)
         .single();
-      
+
       isFollowing = !!followData;
     }
 
@@ -61,22 +64,20 @@ async function getUserProfile(username: string) {
 async function getUserTweets(userId: string) {
   try {
     const supabase = await createClient();
-    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    const {
+      data: { user: currentUser },
+    } = await supabase.auth.getUser();
 
     const { data: tweets, error } = await supabase
       .from("tweets")
-      .select(`
+      .select(
+        `
         id,
         content,
         created_at,
-        user_id,
-        profiles!tweets_user_id_fkey (
-          id,
-          username,
-          name,
-          avatar_url
-        )
-      `)
+        user_id
+      `
+      )
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(50);
@@ -85,8 +86,13 @@ async function getUserTweets(userId: string) {
       return [];
     }
 
+    const profileMap = await fetchProfileMap(
+      supabase,
+      tweets.map((t) => t.user_id)
+    );
+
     const tweetIds = tweets.map((t) => t.id);
-    
+
     const { data: likesData } = await supabase
       .from("likes")
       .select("tweet_id")
@@ -99,7 +105,7 @@ async function getUserTweets(userId: string) {
         .select("tweet_id")
         .eq("user_id", currentUser.id)
         .in("tweet_id", tweetIds);
-      
+
       userLikes = userLikesData?.map((l) => l.tweet_id) || [];
     }
 
@@ -109,7 +115,7 @@ async function getUserTweets(userId: string) {
     });
 
     return tweets.map((tweet) => {
-      const profile = tweet.profiles as any;
+      const profile = profileMap.get(tweet.user_id);
       return {
         id: tweet.id,
         content: tweet.content,
@@ -191,9 +197,7 @@ async function UserProfileContent({ username }: { username: string }) {
       <div>
         {tweets.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-gray-500 dark:text-gray-400">
-              No tweets yet.
-            </p>
+            <p className="text-gray-500 dark:text-gray-400">No tweets yet.</p>
           </div>
         ) : (
           tweets.map((tweet) => (

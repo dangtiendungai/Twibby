@@ -1,11 +1,22 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import type { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Home, Search, User, Plus, Bell, Bookmark, Settings, Hash, LogOut } from "lucide-react";
+import {
+  Home,
+  Search,
+  User as UserIcon,
+  Plus,
+  Bell,
+  Bookmark,
+  Settings,
+  Hash,
+  LogOut,
+} from "lucide-react";
 import Button from "./Button";
 
 const navigation = [
@@ -14,45 +25,43 @@ const navigation = [
   { name: "Search", href: "/search", icon: Search },
   { name: "Notifications", href: "/notifications", icon: Bell },
   { name: "Bookmarks", href: "/bookmarks", icon: Bookmark },
-  { name: "Profile", href: "/profile", icon: User },
+  { name: "Profile", href: "/profile", icon: UserIcon },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    try {
-      const supabase = createClient();
-      
-      // Get initial session
-      supabase.auth.getUser().then(({ data: { user } }) => {
+    const supabase = createClient();
+
+    // Get initial session
+    supabase.auth
+      .getUser()
+      .then(({ data: { user } }) => {
         setUser(user);
-        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching initial user:", error);
       });
 
-      // Listen for auth changes
-      const {
-        data: { subscription },
-      } = supabase.auth.onAuthStateChange((_event, session) => {
-        setUser(session?.user ?? null);
-      });
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
 
-      return () => subscription.unsubscribe();
-    } catch (error) {
-      console.error("Error initializing Supabase client:", error);
-      setIsLoading(false);
-    }
+    return () => subscription.unsubscribe();
   }, []);
 
   const handleLogout = async () => {
     try {
       const supabase = createClient();
       const { error } = await supabase.auth.signOut();
-      
+
       if (error) {
         console.error("Error signing out:", error);
         return;
@@ -60,7 +69,7 @@ export default function Sidebar() {
 
       // Clear user state immediately
       setUser(null);
-      
+
       // Redirect to login page
       router.push("/login");
       router.refresh();

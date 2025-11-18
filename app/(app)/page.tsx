@@ -2,29 +2,28 @@ import { Suspense } from "react";
 import TweetComposer from "../components/TweetComposer";
 import Tweet from "../components/Tweet";
 import { createClient } from "@/lib/supabase/server";
+import { fetchProfileMap } from "@/lib/supabase/profile-helpers";
 
 async function getTweets() {
   try {
     const supabase = await createClient();
-    
+
     // Get current user
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    // Fetch tweets with author profiles
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    // Fetch tweets
     const { data: tweets, error } = await supabase
       .from("tweets")
-      .select(`
+      .select(
+        `
         id,
         content,
         created_at,
-        user_id,
-        profiles!tweets_user_id_fkey (
-          id,
-          username,
-          name,
-          avatar_url
-        )
-      `)
+        user_id
+      `
+      )
       .order("created_at", { ascending: false })
       .limit(50);
 
@@ -35,9 +34,14 @@ async function getTweets() {
 
     if (!tweets) return [];
 
+    const profileMap = await fetchProfileMap(
+      supabase,
+      tweets.map((t) => t.user_id)
+    );
+
     // Get like counts and check if user has liked each tweet
     const tweetIds = tweets.map((t) => t.id);
-    
+
     // Get like counts
     const { data: likesData } = await supabase
       .from("likes")
@@ -52,7 +56,7 @@ async function getTweets() {
         .select("tweet_id")
         .eq("user_id", user.id)
         .in("tweet_id", tweetIds);
-      
+
       userLikes = userLikesData?.map((l) => l.tweet_id) || [];
     }
 
@@ -64,7 +68,7 @@ async function getTweets() {
 
     // Format tweets
     return tweets.map((tweet) => {
-      const profile = tweet.profiles as any;
+      const profile = profileMap.get(tweet.user_id);
       return {
         id: tweet.id,
         content: tweet.content,
