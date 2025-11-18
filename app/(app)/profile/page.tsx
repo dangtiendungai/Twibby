@@ -68,7 +68,8 @@ async function getUserTweets(userId: string) {
         id,
         content,
         created_at,
-        user_id
+        user_id,
+        image_url
       `
       )
       .eq("user_id", userId)
@@ -121,6 +122,7 @@ async function getUserTweets(userId: string) {
         createdAt: tweet.created_at,
         likes: likeCounts[tweet.id] || 0,
         isLiked: userLikes.includes(tweet.id),
+        imageUrl: tweet.image_url,
       };
     });
   } catch (error) {
@@ -209,6 +211,7 @@ async function ProfileContent() {
               createdAt={tweet.createdAt}
               likes={tweet.likes}
               isLiked={tweet.isLiked}
+              imageUrl={tweet.imageUrl}
             />
           ))
         )}

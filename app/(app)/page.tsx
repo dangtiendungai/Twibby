@@ -21,7 +21,8 @@ async function getTweets() {
         id,
         content,
         created_at,
-        user_id
+        user_id,
+        image_url
       `
       )
       .order("created_at", { ascending: false })
@@ -80,6 +81,7 @@ async function getTweets() {
         createdAt: tweet.created_at,
         likes: likeCounts[tweet.id] || 0,
         isLiked: userLikes.includes(tweet.id),
+        imageUrl: tweet.image_url,
       };
     });
   } catch (error) {
@@ -112,6 +114,7 @@ async function TweetsList() {
           createdAt={tweet.createdAt}
           likes={tweet.likes}
           isLiked={tweet.isLiked}
+          imageUrl={tweet.imageUrl}
         />
       ))}
     </div>

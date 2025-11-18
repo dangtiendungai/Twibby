@@ -37,7 +37,7 @@ async function getBookmarks() {
 
     const { data: tweets, error: tweetsError } = await supabase
       .from("tweets")
-      .select("id, content, created_at, user_id")
+      .select("id, content, created_at, user_id, image_url")
       .in("id", tweetIds);
 
     if (tweetsError || !tweets || tweets.length === 0) {
@@ -86,6 +86,7 @@ async function getBookmarks() {
           createdAt: tweet.created_at,
           likes: likeCounts[tweet.id] || 0,
           isLiked: userLikes.includes(tweet.id),
+          imageUrl: tweet.image_url,
         };
       })
       .filter(Boolean) as Array<{
@@ -129,6 +130,7 @@ async function BookmarksList() {
           createdAt={tweet.createdAt}
           likes={tweet.likes}
           isLiked={tweet.isLiked}
+          imageUrl={tweet.imageUrl}
         />
       ))}
     </div>

@@ -29,6 +29,7 @@ interface SearchTweet {
   createdAt: string;
   likes: number;
   isLiked: boolean;
+  imageUrl?: string | null;
 }
 
 export default function SearchPage() {
@@ -102,7 +103,8 @@ export default function SearchPage() {
               id,
               content,
               created_at,
-              user_id
+              user_id,
+              image_url
             `
             )
             .ilike("content", `%${searchQuery}%`)
@@ -157,6 +159,7 @@ export default function SearchPage() {
                   createdAt: tweet.created_at,
                   likes: likeCounts[tweet.id] || 0,
                   isLiked: userLikes.includes(tweet.id),
+                  imageUrl: tweet.image_url,
                 };
               })
             );
@@ -325,6 +328,7 @@ export default function SearchPage() {
                     createdAt={tweet.createdAt}
                     likes={tweet.likes}
                     isLiked={tweet.isLiked}
+                    imageUrl={tweet.imageUrl}
                   />
                 ))
               ) : searchQuery ? (

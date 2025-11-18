@@ -75,7 +75,8 @@ async function getUserTweets(userId: string) {
         id,
         content,
         created_at,
-        user_id
+        user_id,
+        image_url
       `
       )
       .eq("user_id", userId)
@@ -127,6 +128,7 @@ async function getUserTweets(userId: string) {
         createdAt: tweet.created_at,
         likes: likeCounts[tweet.id] || 0,
         isLiked: userLikes.includes(tweet.id),
+        imageUrl: tweet.image_url,
       };
     });
   } catch (error) {
@@ -201,15 +203,16 @@ async function UserProfileContent({ username }: { username: string }) {
           </div>
         ) : (
           tweets.map((tweet) => (
-            <Tweet
-              key={tweet.id}
-              id={tweet.id}
-              content={tweet.content}
-              author={tweet.author}
-              createdAt={tweet.createdAt}
-              likes={tweet.likes}
-              isLiked={tweet.isLiked}
-            />
+          <Tweet
+            key={tweet.id}
+            id={tweet.id}
+            content={tweet.content}
+            author={tweet.author}
+            createdAt={tweet.createdAt}
+            likes={tweet.likes}
+            isLiked={tweet.isLiked}
+            imageUrl={tweet.imageUrl}
+          />
           ))
         )}
       </div>

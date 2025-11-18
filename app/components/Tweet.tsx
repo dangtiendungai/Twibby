@@ -13,12 +13,13 @@ interface TweetProps {
   author: {
     username: string;
     name: string;
-    avatar?: string;
+    avatar?: string | null;
   };
   createdAt: string;
   likes: number;
   isLiked?: boolean;
   onLike?: (id: string) => void;
+  imageUrl?: string | null;
 }
 
 export default function Tweet({
@@ -29,6 +30,7 @@ export default function Tweet({
   likes: initialLikes,
   isLiked: initialIsLiked = false,
   onLike,
+  imageUrl,
 }: TweetProps) {
   const router = useRouter();
   const [liked, setLiked] = useState(initialIsLiked);
@@ -49,14 +51,16 @@ export default function Tweet({
 
     setIsLiking(true);
     const newLiked = !liked;
-    
+
     // Optimistic update
     setLiked(newLiked);
     setLikeCount((prev) => (newLiked ? prev + 1 : prev - 1));
 
     try {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
       if (!user) {
         // Revert optimistic update
@@ -68,12 +72,10 @@ export default function Tweet({
 
       if (newLiked) {
         // Add like
-        const { error } = await supabase
-          .from("likes")
-          .insert({
-            user_id: user.id,
-            tweet_id: id,
-          });
+        const { error } = await supabase.from("likes").insert({
+          user_id: user.id,
+          tweet_id: id,
+        });
 
         if (error) {
           // Revert optimistic update
@@ -138,8 +140,20 @@ export default function Tweet({
           <Link
             href={`/user/${author.username}`}
             onClick={(e) => e.stopPropagation()}
-            className="w-12 h-12 rounded-full bg-gray-300 dark:bg-gray-700 flex-shrink-0 block"
-          ></Link>
+            className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex-shrink-0 overflow-hidden"
+          >
+            {author.avatar ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={author.avatar}
+                alt={`${author.name} avatar`}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700" />
+            )}
+          </Link>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <Link
@@ -164,6 +178,17 @@ export default function Tweet({
             <p className="text-gray-900 dark:text-gray-100 mb-3 whitespace-pre-wrap break-words">
               {content}
             </p>
+            {imageUrl && (
+              <div className="mb-3 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={imageUrl}
+                  alt="Tweet attachment"
+                  className="w-full object-cover max-h-[450px]"
+                  loading="lazy"
+                />
+              </div>
+            )}
             <div
               className="flex items-center gap-6 text-gray-500 dark:text-gray-400"
               onClick={(e) => e.stopPropagation()}
