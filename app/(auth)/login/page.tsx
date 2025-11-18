@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -20,6 +20,18 @@ export default function LoginPage() {
   const [show2FA, setShow2FA] = useState(false);
   const [pendingEmail, setPendingEmail] = useState("");
   const [pendingPassword, setPendingPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+
+  // Restore rememberMe state from cookie on mount
+  useEffect(() => {
+    const rememberMeCookie = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("rememberMe="));
+    if (rememberMeCookie) {
+      const value = rememberMeCookie.split("=")[1];
+      setRememberMe(value === "true");
+    }
+  }, []);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,6 +39,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
+      // The rememberMe cookie is already set when checkbox changes
       const supabase = createClient();
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
@@ -205,6 +218,17 @@ export default function LoginPage() {
                   id="remember-me"
                   name="remember-me"
                   label="Remember me"
+                  checked={rememberMe}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setRememberMe(checked);
+                    // Set cookie immediately so middleware can read it
+                    if (checked) {
+                      document.cookie = "rememberMe=true; path=/; max-age=2592000"; // 30 days
+                    } else {
+                      document.cookie = "rememberMe=false; path=/; max-age=0"; // Delete cookie
+                    }
+                  }}
                 />
 
                 <div className="text-sm">
