@@ -11,8 +11,8 @@ import {
   MoreHorizontal,
   Trash2,
 } from "lucide-react";
-import Button from "./Button";
-import ConfirmDialog from "./ConfirmDialog";
+import Button from "../ui/Button";
+import ConfirmDialog from "../dialogs/ConfirmDialog";
 
 interface TweetProps {
   id: string;

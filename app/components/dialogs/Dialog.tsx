@@ -3,7 +3,7 @@
 import { useEffect, useRef, ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
-import Button from "./Button";
+import Button from "../ui/Button";
 
 interface DialogProps {
   isOpen: boolean;

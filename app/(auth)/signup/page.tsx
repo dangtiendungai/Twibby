@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import Checkbox from "../../components/Checkbox";
-import Button from "../../components/Button";
-import TextField from "../../components/TextField";
+import Checkbox from "../../components/ui/Checkbox";
+import Button from "../../components/ui/Button";
+import TextField from "../../components/ui/TextField";
 
 export default function SignupPage() {
   const router = useRouter();

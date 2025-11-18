@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import Button from "../../components/Button";
+import Button from "../../components/ui/Button";
 import { createClient } from "@/lib/supabase/server";
 import { fetchProfileMap } from "@/lib/supabase/profile-helpers";
 

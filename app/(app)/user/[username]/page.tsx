@@ -1,8 +1,8 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import ProfileCard from "../../../components/ProfileCard";
-import ProfileTabs from "../../../components/ProfileTabs";
-import TweetsList from "../../../components/TweetsList";
+import ProfileCard from "../../../components/profile/ProfileCard";
+import ProfileTabs from "../../../components/profile/ProfileTabs";
+import TweetsList from "../../../components/tweets/TweetsList";
 import { createClient } from "@/lib/supabase/server";
 import { fetchProfileMap } from "@/lib/supabase/profile-helpers";
 

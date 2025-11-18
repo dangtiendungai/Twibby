@@ -1,6 +1,6 @@
-import Sidebar from "../../../../components/Sidebar";
+import Sidebar from "../../../../components/layout/Sidebar";
 import Link from "next/link";
-import Button from "../../../../components/Button";
+import Button from "../../../../components/ui/Button";
 
 // Mock data
 const mockFollowers = [

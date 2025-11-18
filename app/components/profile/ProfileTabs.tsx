@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Button from "./Button";
+import Button from "../ui/Button";
 
 type TabType = "posts" | "replies" | "media" | "likes";
 

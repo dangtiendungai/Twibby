@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import Tweet from "../../components/Tweet";
+import Tweet from "../../components/tweets/Tweet";
 import { createClient } from "@/lib/supabase/server";
 import { fetchProfileMap } from "@/lib/supabase/profile-helpers";
 

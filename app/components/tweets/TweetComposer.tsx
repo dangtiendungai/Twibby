@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { createClient } from "@/lib/supabase/client";
-import Button from "./Button";
+import Button from "../ui/Button";
 import type { User } from "@supabase/supabase-js";
 
 interface TweetComposerProps {

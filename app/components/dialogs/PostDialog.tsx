@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import Dialog from "./Dialog";
-import TweetComposer from "./TweetComposer";
+import TweetComposer from "../tweets/TweetComposer";
 
 interface PostDialogProps {
   isOpen: boolean;

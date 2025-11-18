@@ -4,13 +4,13 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { createClient } from "@/lib/supabase/client";
-import Button from "../../components/Button";
-import TextField from "../../components/TextField";
-import Checkbox from "../../components/Checkbox";
-import ConfirmDialog from "../../components/ConfirmDialog";
-import AvatarUploader from "../../components/AvatarUploader";
-import BannerUploader from "../../components/BannerUploader";
-import ChangePasswordDialog from "../../components/ChangePasswordDialog";
+import Button from "../../components/ui/Button";
+import TextField from "../../components/ui/TextField";
+import Checkbox from "../../components/ui/Checkbox";
+import ConfirmDialog from "../../components/dialogs/ConfirmDialog";
+import AvatarUploader from "../../components/profile/AvatarUploader";
+import BannerUploader from "../../components/profile/BannerUploader";
+import ChangePasswordDialog from "../../components/dialogs/ChangePasswordDialog";
 import type { User } from "@supabase/supabase-js";
 
 interface Profile {

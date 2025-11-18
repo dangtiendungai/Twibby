@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import TweetComposer from "../components/TweetComposer";
-import TweetsList from "../components/TweetsList";
+import TweetComposer from "../components/tweets/TweetComposer";
+import TweetsList from "../components/tweets/TweetsList";
 import { createClient } from "@/lib/supabase/server";
 import { fetchTweetsWithDetails } from "@/lib/supabase/tweet-helpers";
 

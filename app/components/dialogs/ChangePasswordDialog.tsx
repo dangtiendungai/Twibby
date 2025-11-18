@@ -4,8 +4,8 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import { createClient } from "@/lib/supabase/client";
 import Dialog from "./Dialog";
-import TextField from "./TextField";
-import Button from "./Button";
+import TextField from "../ui/TextField";
+import Button from "../ui/Button";
 
 interface ChangePasswordDialogProps {
   isOpen: boolean;

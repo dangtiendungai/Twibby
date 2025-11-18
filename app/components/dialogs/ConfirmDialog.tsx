@@ -2,7 +2,7 @@
 
 import { ReactNode } from "react";
 import Dialog from "./Dialog";
-import Button from "./Button";
+import Button from "../ui/Button";
 
 interface ConfirmDialogProps {
   isOpen: boolean;

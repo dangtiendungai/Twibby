@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import Tweet from "../../../components/Tweet";
-import TweetComposer from "../../../components/TweetComposer";
+import Tweet from "../../../components/tweets/Tweet";
+import TweetComposer from "../../../components/tweets/TweetComposer";
 import { createClient } from "@/lib/supabase/server";
 import { fetchProfileMap } from "@/lib/supabase/profile-helpers";
 

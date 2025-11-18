@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import Button from "./Button";
+import Button from "../ui/Button";
 
 interface ProfileCardProps {
   username: string;

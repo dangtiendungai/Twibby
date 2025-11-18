@@ -1,6 +1,6 @@
-import Sidebar from "../../../components/Sidebar";
-import Button from "../../../components/Button";
-import TextField from "../../../components/TextField";
+import Sidebar from "../../../components/layout/Sidebar";
+import Button from "../../../components/ui/Button";
+import TextField from "../../../components/ui/TextField";
 
 export default function EditProfilePage() {
   return (

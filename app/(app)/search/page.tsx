@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import TweetsList from "../../components/TweetsList";
-import Button from "../../components/Button";
+import TweetsList from "../../components/tweets/TweetsList";
+import Button from "../../components/ui/Button";
 import { Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { fetchTweetsWithDetails } from "@/lib/supabase/tweet-helpers";

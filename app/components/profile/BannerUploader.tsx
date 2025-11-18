@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { toast } from "react-toastify";
 import { createClient } from "@/lib/supabase/client";
-import Button from "./Button";
+import Button from "../ui/Button";
 import { Upload, X, Loader2 } from "lucide-react";
 
 interface BannerUploaderProps {

@@ -3,8 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import Button from "../../components/Button";
-import TextField from "../../components/TextField";
+import Button from "../../components/ui/Button";
+import TextField from "../../components/ui/TextField";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");

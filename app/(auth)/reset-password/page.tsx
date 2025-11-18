@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import Button from "../../components/Button";
-import TextField from "../../components/TextField";
+import Button from "../../components/ui/Button";
+import TextField from "../../components/ui/TextField";
 
 function ResetPasswordForm() {
   const router = useRouter();

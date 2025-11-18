@@ -17,8 +17,8 @@ import {
   Hash,
   LogOut,
 } from "lucide-react";
-import Button from "./Button";
-import PostDialog from "./PostDialog";
+import Button from "../ui/Button";
+import PostDialog from "../dialogs/PostDialog";
 
 const navigation = [
   { name: "Home", href: "/", icon: Home },
