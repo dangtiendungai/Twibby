@@ -4,6 +4,16 @@ import Tweet from "../../components/Tweet";
 import { createClient } from "@/lib/supabase/server";
 import { fetchProfileMap } from "@/lib/supabase/profile-helpers";
 
+type BookmarkTweet = {
+  id: string;
+  content: string;
+  author: { username: string; name: string; avatar: string | undefined };
+  createdAt: string;
+  likes: number;
+  isLiked: boolean;
+  imageUrl: string | null;
+};
+
 async function getBookmarks() {
   try {
     const supabase = await createClient();
@@ -69,7 +79,7 @@ async function getBookmarks() {
       likeCounts[like.tweet_id] = (likeCounts[like.tweet_id] || 0) + 1;
     });
 
-    return bookmarks
+    const bookmarkTweets = bookmarks
       .map((bookmark) => {
         const tweet = tweetMap.get(bookmark.tweet_id);
         if (!tweet) return null;
@@ -89,14 +99,9 @@ async function getBookmarks() {
           imageUrl: tweet.image_url,
         };
       })
-      .filter(Boolean) as Array<{
-      id: string;
-      content: string;
-      author: { username: string; name: string; avatar?: string };
-      createdAt: string;
-      likes: number;
-      isLiked: boolean;
-    }>;
+      .filter((tweet): tweet is BookmarkTweet => Boolean(tweet));
+
+    return bookmarkTweets;
   } catch (error) {
     console.error("Error fetching bookmarks:", error);
     return [];

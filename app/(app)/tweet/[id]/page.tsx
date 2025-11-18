@@ -5,9 +5,9 @@ import TweetComposer from "../../../components/TweetComposer";
 import { createClient } from "@/lib/supabase/server";
 
 interface TweetPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 type TweetWithProfile = {
@@ -113,7 +113,9 @@ async function TweetContent({ tweetId }: { tweetId: string }) {
   );
 }
 
-export default function TweetPage({ params }: TweetPageProps) {
+export default async function TweetPage({ params }: TweetPageProps) {
+  const { id } = await params;
+
   return (
     <main className="flex-1 border-x border-gray-200 dark:border-gray-800 min-w-0">
       <div className="sticky top-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 px-4 py-4 z-10">
@@ -131,7 +133,7 @@ export default function TweetPage({ params }: TweetPageProps) {
           </div>
         }
       >
-        <TweetContent tweetId={params.id} />
+        <TweetContent tweetId={id} />
       </Suspense>
     </main>
   );
