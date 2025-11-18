@@ -49,14 +49,16 @@ export default function ProfileCard({
 
     setIsToggling(true);
     const newFollowingState = !followingState;
-    
+
     // Optimistic update
     setFollowingState(newFollowingState);
     setFollowersCount((prev) => (newFollowingState ? prev + 1 : prev - 1));
 
     try {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
       if (!user) {
         // Revert optimistic update
@@ -68,17 +70,17 @@ export default function ProfileCard({
 
       if (newFollowingState) {
         // Follow
-        const { error } = await supabase
-          .from("follows")
-          .insert({
-            follower_id: user.id,
-            following_id: userId,
-          });
+        const { error } = await supabase.from("follows").insert({
+          follower_id: user.id,
+          following_id: userId,
+        });
 
         if (error) {
           // Revert optimistic update
           setFollowingState(!newFollowingState);
-          setFollowersCount((prev) => (!newFollowingState ? prev + 1 : prev - 1));
+          setFollowersCount((prev) =>
+            !newFollowingState ? prev + 1 : prev - 1
+          );
           console.error("Error following user:", error);
         } else {
           onFollow?.();
@@ -94,7 +96,9 @@ export default function ProfileCard({
         if (error) {
           // Revert optimistic update
           setFollowingState(!newFollowingState);
-          setFollowersCount((prev) => (!newFollowingState ? prev + 1 : prev - 1));
+          setFollowersCount((prev) =>
+            !newFollowingState ? prev + 1 : prev - 1
+          );
           console.error("Error unfollowing user:", error);
         } else {
           onUnfollow?.();
@@ -125,7 +129,19 @@ export default function ProfileCard({
       <div className="h-32 bg-gradient-to-r from-blue-400 to-purple-500"></div>
       <div className="px-4 pb-4">
         <div className="relative -mt-16 mb-4">
-          <div className="w-24 h-24 rounded-full bg-gray-300 dark:bg-gray-700 border-4 border-white dark:border-black"></div>
+          <div className="w-24 h-24 rounded-full bg-gray-300 dark:bg-gray-700 border-4 border-white dark:border-black overflow-hidden flex-shrink-0">
+            {avatar ? (
+              <img
+                src={avatar}
+                alt={name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-white text-2xl font-semibold">
+                {name ? name[0].toUpperCase() : "U"}
+              </div>
+            )}
+          </div>
         </div>
         <div className="flex items-start justify-between mb-4">
           <div>
@@ -183,4 +199,3 @@ export default function ProfileCard({
     </div>
   );
 }
-
