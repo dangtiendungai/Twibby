@@ -2,12 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, User, Plus } from "lucide-react";
+import { Home, Search, User, Plus, Bell, Bookmark, Settings, Hash } from "lucide-react";
 
 const navigation = [
   { name: "Home", href: "/", icon: Home },
-  { name: "Explore", href: "/explore", icon: Search },
+  { name: "Explore", href: "/explore", icon: Hash },
+  { name: "Search", href: "/search", icon: Search },
+  { name: "Notifications", href: "/notifications", icon: Bell },
+  { name: "Bookmarks", href: "/bookmarks", icon: Bookmark },
   { name: "Profile", href: "/profile", icon: User },
+  { name: "Settings", href: "/settings", icon: Settings },
 ];
 
 export default function Sidebar() {
