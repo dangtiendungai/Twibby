@@ -11,6 +11,7 @@ import ConfirmDialog from "../../components/dialogs/ConfirmDialog";
 import AvatarUploader from "../../components/profile/AvatarUploader";
 import BannerUploader from "../../components/profile/BannerUploader";
 import ChangePasswordDialog from "../../components/dialogs/ChangePasswordDialog";
+import TwoFactorDialog from "../../components/dialogs/TwoFactorDialog";
 import type { User } from "@supabase/supabase-js";
 
 interface Profile {
@@ -33,6 +34,8 @@ export default function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isChangePasswordDialogOpen, setIsChangePasswordDialogOpen] =
     useState(false);
+  const [is2FADialogOpen, setIs2FADialogOpen] = useState(false);
+  const [is2FAEnabled, setIs2FAEnabled] = useState(false);
 
   useEffect(() => {
     async function loadProfile() {
@@ -61,6 +64,13 @@ export default function SettingsPage() {
         }
 
         setProfile(profileData);
+
+        // Check 2FA status
+        const statusResponse = await fetch("/api/2fa/status");
+        if (statusResponse.ok) {
+          const statusData = await statusResponse.json();
+          setIs2FAEnabled(statusData.enabled || false);
+        }
       } catch (error) {
         console.error("Error loading profile:", error);
       } finally {
@@ -336,9 +346,22 @@ export default function SettingsPage() {
               >
                 Change password
               </Button>
-              <Button variant="outline" fullWidth disabled>
-                Two-factor authentication
-              </Button>
+              <div>
+                <Button
+                  variant="outline"
+                  fullWidth
+                  onClick={() => setIs2FADialogOpen(true)}
+                >
+                  {is2FAEnabled
+                    ? "Manage two-factor authentication"
+                    : "Enable two-factor authentication"}
+                </Button>
+                {is2FAEnabled && (
+                  <p className="mt-2 text-xs text-green-600 dark:text-green-400">
+                    ✓ Two-factor authentication is enabled
+                  </p>
+                )}
+              </div>
             </div>
           </section>
 
@@ -391,6 +414,13 @@ export default function SettingsPage() {
       <ChangePasswordDialog
         isOpen={isChangePasswordDialogOpen}
         onClose={() => setIsChangePasswordDialogOpen(false)}
+      />
+
+      <TwoFactorDialog
+        isOpen={is2FADialogOpen}
+        onClose={() => setIs2FADialogOpen(false)}
+        onEnabled={() => setIs2FAEnabled(true)}
+        onDisabled={() => setIs2FAEnabled(false)}
       />
     </>
   );

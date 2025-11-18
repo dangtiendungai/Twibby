@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import Checkbox from "../../components/ui/Checkbox";
 import Button from "../../components/ui/Button";
 import TextField from "../../components/ui/TextField";
+import TwoFactorVerifyDialog from "../../components/dialogs/TwoFactorVerifyDialog";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,6 +17,9 @@ export default function LoginPage() {
   const [showMagicLink, setShowMagicLink] = useState(false);
   const [error, setError] = useState("");
   const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [show2FA, setShow2FA] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState("");
+  const [pendingPassword, setPendingPassword] = useState("");
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,6 +27,18 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
+      // First, check if 2FA is enabled for this email
+      const checkResponse = await fetch("/api/2fa/check-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const checkData = await checkResponse.json();
+      const requires2FA = checkData.requires2FA || false;
+
       const supabase = createClient();
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
@@ -35,6 +51,15 @@ export default function LoginPage() {
         return;
       }
 
+      // If 2FA is required, show verification dialog
+      if (requires2FA) {
+        setPendingEmail(email);
+        setPendingPassword(password);
+        setShow2FA(true);
+        setIsLoading(false);
+        return;
+      }
+
       // Redirect to home page on success
       router.push("/");
       router.refresh();
@@ -42,6 +67,47 @@ export default function LoginPage() {
       setError("An unexpected error occurred. Please try again.");
       setIsLoading(false);
     }
+  };
+
+  const handle2FAVerify = async (code: string) => {
+    try {
+      // Verify the 2FA code (user is already authenticated from password login)
+      const verifyResponse = await fetch("/api/2fa/verify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ code }),
+      });
+
+      const verifyData = await verifyResponse.json();
+
+      if (!verifyResponse.ok) {
+        throw new Error(verifyData.error || "Invalid verification code");
+      }
+
+      // 2FA verified successfully, the session is already active from the password login
+      setShow2FA(false);
+      setPendingEmail("");
+      setPendingPassword("");
+      router.push("/");
+      router.refresh();
+    } catch (err: any) {
+      // If 2FA verification fails, sign out the user
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      throw err;
+    }
+  };
+
+  const handle2FAClose = async () => {
+    // Sign out if user cancels 2FA
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    setShow2FA(false);
+    setPendingEmail("");
+    setPendingPassword("");
+    setError("Two-factor authentication is required to sign in.");
   };
 
   const handleMagicLink = async (e: React.FormEvent) => {
@@ -250,6 +316,12 @@ export default function LoginPage() {
           )}
         </div>
       </div>
+
+      <TwoFactorVerifyDialog
+        isOpen={show2FA}
+        onClose={handle2FAClose}
+        onVerify={handle2FAVerify}
+      />
     </div>
   );
 }

@@ -221,3 +221,46 @@ RETURNS BOOLEAN AS $$
   );
 $$ LANGUAGE SQL STABLE;
 
+-- ============================================
+-- 6. TWO-FACTOR AUTHENTICATION TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS public.two_factor_auth (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL UNIQUE,
+  secret TEXT NOT NULL,
+  enabled BOOLEAN DEFAULT false NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+-- Indexes for two_factor_auth
+CREATE INDEX IF NOT EXISTS two_factor_auth_user_id_idx ON public.two_factor_auth(user_id);
+
+-- Enable RLS
+ALTER TABLE public.two_factor_auth ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies for two_factor_auth
+-- Users can only read their own 2FA settings
+CREATE POLICY "Users can view their own 2FA settings"
+  ON public.two_factor_auth
+  FOR SELECT
+  USING (auth.uid() = user_id);
+
+-- Users can insert their own 2FA settings
+CREATE POLICY "Users can insert their own 2FA settings"
+  ON public.two_factor_auth
+  FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+-- Users can update their own 2FA settings
+CREATE POLICY "Users can update their own 2FA settings"
+  ON public.two_factor_auth
+  FOR UPDATE
+  USING (auth.uid() = user_id);
+
+-- Users can delete their own 2FA settings
+CREATE POLICY "Users can delete their own 2FA settings"
+  ON public.two_factor_auth
+  FOR DELETE
+  USING (auth.uid() = user_id);
+
