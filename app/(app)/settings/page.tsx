@@ -1,9 +1,25 @@
-import Sidebar from "../../components/Sidebar";
+"use client";
+
+import { useState } from "react";
 import Button from "../../components/Button";
 import TextField from "../../components/TextField";
 import Checkbox from "../../components/Checkbox";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 export default function SettingsPage() {
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    // TODO: Implement account deletion
+    console.log("Deleting account...");
+    setTimeout(() => {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
+    }, 2000);
+  };
+
   return (
     <>
       <main className="flex-1 border-x border-gray-200 dark:border-gray-800 min-w-0">
@@ -148,6 +164,7 @@ export default function SettingsPage() {
                 <Button
                   variant="outline"
                   className="border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  onClick={() => setIsDeleteDialogOpen(true)}
                 >
                   Delete account
                 </Button>
@@ -156,6 +173,28 @@ export default function SettingsPage() {
           </section>
         </div>
       </main>
+
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={handleDeleteAccount}
+        title="Delete Account"
+        message={
+          <>
+            <p className="mb-2">
+              Are you sure you want to delete your account? This action cannot
+              be undone.
+            </p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              All your tweets, followers, and data will be permanently deleted.
+            </p>
+          </>
+        }
+        confirmText="Delete Account"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </>
   );
 }
