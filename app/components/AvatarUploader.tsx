@@ -87,14 +87,14 @@ export default function AvatarUploader({
       }
 
       // Generate unique filename
+      // Path format: {userId}/{timestamp}.{ext}
       const fileExt = file.name.split(".").pop();
       const fileName = `${userId}/${Date.now()}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
 
-      // Upload to Supabase Storage
+      // Upload to Supabase Storage (bucket name is 'avatars', path is just the fileName)
       const { error: uploadError, data } = await supabase.storage
         .from("avatars")
-        .upload(filePath, file, {
+        .upload(fileName, file, {
           cacheControl: "3600",
           upsert: true,
         });
@@ -112,7 +112,7 @@ export default function AvatarUploader({
       // Get public URL
       const {
         data: { publicUrl },
-      } = supabase.storage.from("avatars").getPublicUrl(filePath);
+      } = supabase.storage.from("avatars").getPublicUrl(fileName);
 
       // Update profile with new avatar URL
       // Use user.id instead of userId to ensure RLS policy matches
@@ -162,12 +162,13 @@ export default function AvatarUploader({
       try {
         const url = new URL(currentAvatarUrl);
         const pathParts = url.pathname.split("/");
-        const filePath = pathParts
-          .slice(pathParts.indexOf("avatars"))
-          .join("/");
-
-        // Delete from storage if it's in our bucket
-        if (filePath.includes("avatars/")) {
+        const avatarsIndex = pathParts.indexOf("avatars");
+        
+        if (avatarsIndex !== -1 && avatarsIndex < pathParts.length - 1) {
+          // Get the path after 'avatars' (e.g., 'avatars/userId/file.jpg' -> 'userId/file.jpg')
+          const filePath = pathParts.slice(avatarsIndex + 1).join("/");
+          
+          // Delete from storage
           await supabase.storage.from("avatars").remove([filePath]);
         }
       } catch (urlError) {

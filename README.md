@@ -179,7 +179,7 @@ To enable avatar uploads in the settings page, you need to create a Supabase Sto
 
 ### Step 2: Set Up Storage Policies
 
-After creating the bucket, you need to set up policies to allow users to upload and manage their own avatars. Go to **Storage** → **Policies** → **avatars** and create the following policies:
+After creating the bucket, you need to set up policies to allow users to upload and manage their own avatars. Go to **Storage** → **Policies** → **avatars** in your Supabase dashboard, or run the following SQL in your SQL Editor:
 
 **Policy 1: Allow authenticated users to upload avatars**
 ```sql
@@ -200,6 +200,10 @@ ON storage.objects
 FOR UPDATE
 TO authenticated
 USING (
+  bucket_id = 'avatars' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+)
+WITH CHECK (
   bucket_id = 'avatars' AND
   (storage.foldername(name))[1] = auth.uid()::text
 );
@@ -226,6 +230,56 @@ TO public
 USING (bucket_id = 'avatars');
 ```
 
+**Complete Setup Script** (run all policies at once):
+```sql
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Users can upload their own avatars" ON storage.objects;
+DROP POLICY IF EXISTS "Users can update their own avatars" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete their own avatars" ON storage.objects;
+DROP POLICY IF EXISTS "Public avatar access" ON storage.objects;
+
+-- Policy 1: Allow authenticated users to upload avatars
+CREATE POLICY "Users can upload their own avatars"
+ON storage.objects
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'avatars' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Policy 2: Allow authenticated users to update their own avatars
+CREATE POLICY "Users can update their own avatars"
+ON storage.objects
+FOR UPDATE
+TO authenticated
+USING (
+  bucket_id = 'avatars' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+)
+WITH CHECK (
+  bucket_id = 'avatars' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Policy 3: Allow authenticated users to delete their own avatars
+CREATE POLICY "Users can delete their own avatars"
+ON storage.objects
+FOR DELETE
+TO authenticated
+USING (
+  bucket_id = 'avatars' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Policy 4: Allow public read access to avatars
+CREATE POLICY "Public avatar access"
+ON storage.objects
+FOR SELECT
+TO public
+USING (bucket_id = 'avatars');
+```
+
 ### Step 3: Verify Storage Setup
 
 1. Go to **Storage** → **avatars** in your Supabase dashboard
@@ -234,13 +288,15 @@ USING (bucket_id = 'avatars');
 
 ## Troubleshooting
 
-### "new row violates row-level security policy" error when updating profile
+### "new row violates row-level security policy" error when uploading avatar
 
-If you see this error when trying to upload an avatar or update your profile:
+If you see this error (especially a `StorageApiError`) when trying to upload an avatar:
 
-1. **Check your RLS policy**: The UPDATE policy on the `profiles` table needs both `USING` and `WITH CHECK` clauses.
+1. **Fix Storage Policies**: Run the complete storage policies setup SQL from the "Storage Setup" section above. This will:
+   - Drop any existing policies
+   - Create all required storage policies with correct `WITH CHECK` clauses
 
-2. **Fix the policy**: Run the SQL script in `supabase/fix-rls-policy.sql` in your Supabase SQL Editor, or manually update the policy:
+2. **Fix Profiles RLS Policy**: Ensure the profiles table UPDATE policy has both `USING` and `WITH CHECK` clauses. Run this SQL in your Supabase SQL Editor:
 
 ```sql
 -- Drop the existing policy
@@ -254,7 +310,12 @@ CREATE POLICY "Users can update their own profile"
   WITH CHECK (auth.uid() = id);
 ```
 
-3. **Verify**: After running the fix, try uploading an avatar again from the Settings page.
+3. **Verify Bucket Setup**: Make sure:
+   - The `avatars` bucket exists in Supabase Storage
+   - The bucket is set to **Public**
+   - RLS is enabled on the storage bucket
+
+4. **Test**: After running both SQL fixes, try uploading an avatar again from the Settings page.
 
 ### Profile creation fails during signup
 
