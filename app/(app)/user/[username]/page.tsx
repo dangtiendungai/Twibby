@@ -47,7 +47,7 @@ async function getUserProfile(username: string | undefined) {
     let isFollowing = false;
     if (currentUser) {
       const { data: followData } = await supabase
-        .from("follows")  
+        .from("follows")
         .select("id")
         .eq("follower_id", currentUser.id)
         .eq("following_id", profile.id)
@@ -137,6 +137,7 @@ async function getUserTweets(userId: string) {
         likes: likeCounts[tweet.id] || 0,
         isLiked: userLikes.includes(tweet.id),
         imageUrl: tweet.image_url,
+        userId: tweet.user_id,
       };
     });
   } catch (error) {
@@ -220,6 +221,7 @@ async function UserProfileContent({ username }: { username: string }) {
               likes={tweet.likes}
               isLiked={tweet.isLiked}
               imageUrl={tweet.imageUrl}
+              userId={tweet.userId}
             />
           ))
         )}

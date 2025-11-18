@@ -55,6 +55,7 @@ async function getTweet(tweetId: string) {
       likes: likesCount || 0,
       isLiked,
       imageUrl: tweet.image_url,
+      userId: tweet.user_id,
       author: {
         username: profile?.username || "unknown",
         name: profile?.name || "Unknown User",
@@ -84,6 +85,7 @@ async function TweetContent({ tweetId }: { tweetId: string }) {
         likes={tweet.likes}
         isLiked={tweet.isLiked}
         imageUrl={tweet.imageUrl}
+        userId={tweet.userId}
       />
       <div className="border-b border-gray-200 dark:border-gray-800 p-4">
         <TweetComposer />

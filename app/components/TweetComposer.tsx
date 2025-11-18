@@ -22,7 +22,7 @@ export default function TweetComposer({ onTweetCreated }: TweetComposerProps) {
   const [error, setError] = useState("");
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const maxLength = 280;
+  const maxLength = 1500;
 
   useEffect(() => {
     async function loadUserProfile() {

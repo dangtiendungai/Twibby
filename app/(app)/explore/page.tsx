@@ -71,6 +71,7 @@ async function getExploreTweets() {
         likes: likeCounts[tweet.id] || 0,
         isLiked: userLikes.includes(tweet.id),
         imageUrl: tweet.image_url,
+        userId: tweet.user_id,
       };
     });
   } catch (error) {
@@ -104,6 +105,7 @@ async function ExploreTweetsList() {
           likes={tweet.likes}
           isLiked={tweet.isLiked}
           imageUrl={tweet.imageUrl}
+          userId={tweet.userId}
         />
       ))}
     </div>

@@ -12,6 +12,7 @@ type BookmarkTweet = {
   likes: number;
   isLiked: boolean;
   imageUrl: string | null;
+  userId: string;
 };
 
 async function getBookmarks() {
@@ -97,6 +98,7 @@ async function getBookmarks() {
           likes: likeCounts[tweet.id] || 0,
           isLiked: userLikes.includes(tweet.id),
           imageUrl: tweet.image_url,
+          userId: tweet.user_id,
         };
       })
       .filter((tweet): tweet is BookmarkTweet => Boolean(tweet));
@@ -136,6 +138,7 @@ async function BookmarksList() {
           likes={tweet.likes}
           isLiked={tweet.isLiked}
           imageUrl={tweet.imageUrl}
+          userId={tweet.userId}
         />
       ))}
     </div>

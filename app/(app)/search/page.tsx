@@ -30,6 +30,7 @@ interface SearchTweet {
   likes: number;
   isLiked: boolean;
   imageUrl?: string | null;
+  userId: string;
 }
 
 export default function SearchPage() {
@@ -160,6 +161,7 @@ export default function SearchPage() {
                   likes: likeCounts[tweet.id] || 0,
                   isLiked: userLikes.includes(tweet.id),
                   imageUrl: tweet.image_url,
+                  userId: tweet.user_id,
                 };
               })
             );
@@ -329,6 +331,7 @@ export default function SearchPage() {
                     likes={tweet.likes}
                     isLiked={tweet.isLiked}
                     imageUrl={tweet.imageUrl}
+                    userId={tweet.userId}
                   />
                 ))
               ) : searchQuery ? (

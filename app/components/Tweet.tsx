@@ -4,8 +4,15 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Heart, MessageCircle, Repeat2 } from "lucide-react";
+import {
+  Heart,
+  MessageCircle,
+  Repeat2,
+  MoreHorizontal,
+  Trash2,
+} from "lucide-react";
 import Button from "./Button";
+import ConfirmDialog from "./ConfirmDialog";
 
 interface TweetProps {
   id: string;
@@ -20,6 +27,8 @@ interface TweetProps {
   isLiked?: boolean;
   onLike?: (id: string) => void;
   imageUrl?: string | null;
+  userId?: string; // User ID of the tweet author
+  onDelete?: (id: string) => void; // Callback when tweet is deleted
 }
 
 export default function Tweet({
@@ -31,17 +40,40 @@ export default function Tweet({
   isLiked: initialIsLiked = false,
   onLike,
   imageUrl,
+  userId,
+  onDelete,
 }: TweetProps) {
   const router = useRouter();
   const [liked, setLiked] = useState(initialIsLiked);
   const [likeCount, setLikeCount] = useState(initialLikes);
   const [isLiking, setIsLiking] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const isOwnTweet = currentUserId === userId;
 
   // Sync with props
   useEffect(() => {
     setLiked(initialIsLiked);
     setLikeCount(initialLikes);
   }, [initialIsLiked, initialLikes]);
+
+  // Get current user to check if this is their tweet
+  useEffect(() => {
+    async function getCurrentUser() {
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        setCurrentUserId(user?.id || null);
+      } catch (err) {
+        console.error("Error getting current user:", err);
+      }
+    }
+    getCurrentUser();
+  }, []);
 
   const handleLike = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -115,6 +147,41 @@ export default function Tweet({
     router.push(`/tweet/${id}`);
   };
 
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        setIsDeleting(false);
+        return;
+      }
+
+      const { error } = await supabase.from("tweets").delete().eq("id", id);
+
+      if (error) {
+        console.error("Error deleting tweet:", error);
+        setIsDeleting(false);
+        return;
+      }
+
+      onDelete?.(id);
+
+      // If we're on a tweet detail page, redirect to home
+      if (window.location.pathname.startsWith("/tweet/")) {
+        router.push("/");
+      } else {
+        router.refresh();
+      }
+    } catch (err) {
+      console.error("Error deleting tweet:", err);
+      setIsDeleting(false);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -131,107 +198,165 @@ export default function Tweet({
   };
 
   return (
-    <article
-      className="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors cursor-pointer"
-      onClick={handleTweetClick}
-    >
-      <div className="p-4">
-        <div className="flex gap-3">
-          <Link
-            href={`/user/${author.username}`}
-            onClick={(e) => e.stopPropagation()}
-            className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex-shrink-0 overflow-hidden"
-          >
-            {author.avatar ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={author.avatar}
-                alt={`${author.name} avatar`}
-                className="w-full h-full object-cover"
-                loading="lazy"
-              />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700" />
-            )}
-          </Link>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <Link
-                href={`/user/${author.username}`}
-                onClick={(e) => e.stopPropagation()}
-                className="font-semibold text-gray-900 dark:text-gray-100 hover:underline"
-              >
-                {author.name}
-              </Link>
-              <Link
-                href={`/user/${author.username}`}
-                onClick={(e) => e.stopPropagation()}
-                className="text-gray-500 dark:text-gray-400 hover:underline"
-              >
-                @{author.username}
-              </Link>
-              <span className="text-gray-500 dark:text-gray-400">·</span>
-              <span className="text-gray-500 dark:text-gray-400 text-sm">
-                {formatDate(createdAt)}
-              </span>
-            </div>
-            <p className="text-gray-900 dark:text-gray-100 mb-3 whitespace-pre-wrap break-words">
-              {content}
-            </p>
-            {imageUrl && (
-              <div className="mb-3 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+    <>
+      <article
+        className="group border-b border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors cursor-pointer"
+        onClick={handleTweetClick}
+      >
+        <div className="p-4">
+          <div className="flex gap-3">
+            <Link
+              href={`/user/${author.username}`}
+              onClick={(e) => e.stopPropagation()}
+              className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex-shrink-0 overflow-hidden"
+            >
+              {author.avatar ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={imageUrl}
-                  alt="Tweet attachment"
-                  className="w-full object-cover max-h-[450px]"
+                  src={author.avatar}
+                  alt={`${author.name} avatar`}
+                  className="w-full h-full object-cover"
                   loading="lazy"
                 />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700" />
+              )}
+            </Link>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2">
+                  <Link
+                    href={`/user/${author.username}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="font-semibold text-gray-900 dark:text-gray-100 hover:underline"
+                  >
+                    {author.name}
+                  </Link>
+                  <Link
+                    href={`/user/${author.username}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-gray-500 dark:text-gray-400 hover:underline"
+                  >
+                    @{author.username}
+                  </Link>
+                  <span className="text-gray-500 dark:text-gray-400">·</span>
+                  <span className="text-gray-500 dark:text-gray-400 text-sm">
+                    {formatDate(createdAt)}
+                  </span>
+                </div>
+                {isOwnTweet && (
+                  <div className="relative">
+                    <Button
+                      variant="icon"
+                      color="gray"
+                      size="sm"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setShowMenu(!showMenu);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <MoreHorizontal className="w-5 h-5" />
+                    </Button>
+                    {showMenu && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowMenu(false);
+                          }}
+                        />
+                        <div className="absolute right-0 top-8 z-20 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 min-w-[120px]">
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setShowMenu(false);
+                              setShowDeleteDialog(true);
+                            }}
+                            className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 flex items-center gap-2"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            Delete
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
-            )}
-            <div
-              className="flex items-center gap-6 text-gray-500 dark:text-gray-400"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Button
-                variant="text"
-                color={liked ? "danger" : "gray"}
-                size="sm"
-                onClick={handleLike}
-                className="gap-2 hover:text-red-500"
+              <p className="text-gray-900 dark:text-gray-100 mb-3 whitespace-pre-wrap break-words">
+                {content}
+              </p>
+              {imageUrl && (
+                <div className="mb-3 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={imageUrl}
+                    alt="Tweet attachment"
+                    className="w-full object-cover max-h-[450px]"
+                    loading="lazy"
+                  />
+                </div>
+              )}
+              <div
+                className="flex items-center gap-6 text-gray-500 dark:text-gray-400"
+                onClick={(e) => e.stopPropagation()}
               >
-                <Heart className={`w-5 h-5 ${liked ? "fill-current" : ""}`} />
-                <span className="text-sm">{likeCount}</span>
-              </Button>
-              <Button
-                variant="text"
-                color="gray"
-                size="sm"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-                className="gap-2 hover:text-blue-500"
-              >
-                <MessageCircle className="w-5 h-5" />
-                <span className="text-sm">0</span>
-              </Button>
-              <Button
-                variant="text"
-                color="gray"
-                size="sm"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-                className="gap-2 hover:text-blue-500"
-              >
-                <Repeat2 className="w-5 h-5" />
-              </Button>
+                <Button
+                  variant="text"
+                  color={liked ? "danger" : "gray"}
+                  size="sm"
+                  onClick={handleLike}
+                  className="gap-2 hover:text-red-500"
+                >
+                  <Heart className={`w-5 h-5 ${liked ? "fill-current" : ""}`} />
+                  <span className="text-sm">{likeCount}</span>
+                </Button>
+                <Button
+                  variant="text"
+                  color="gray"
+                  size="sm"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  className="gap-2 hover:text-blue-500"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  <span className="text-sm">0</span>
+                </Button>
+                <Button
+                  variant="text"
+                  color="gray"
+                  size="sm"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  className="gap-2 hover:text-blue-500"
+                >
+                  <Repeat2 className="w-5 h-5" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </article>
+      </article>
+
+      <ConfirmDialog
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={handleDelete}
+        title="Delete Tweet"
+        message="Are you sure you want to delete this tweet? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={isDeleting}
+      />
+    </>
   );
 }

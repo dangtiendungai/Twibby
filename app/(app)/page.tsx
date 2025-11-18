@@ -82,6 +82,7 @@ async function getTweets() {
         likes: likeCounts[tweet.id] || 0,
         isLiked: userLikes.includes(tweet.id),
         imageUrl: tweet.image_url,
+        userId: tweet.user_id,
       };
     });
   } catch (error) {
@@ -115,6 +116,7 @@ async function TweetsList() {
           likes={tweet.likes}
           isLiked={tweet.isLiked}
           imageUrl={tweet.imageUrl}
+          userId={tweet.userId}
         />
       ))}
     </div>
