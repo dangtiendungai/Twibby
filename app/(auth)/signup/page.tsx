@@ -50,7 +50,26 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      const supabase = createClient();
+      let supabase;
+      try {
+        supabase = createClient();
+      } catch (clientError: any) {
+        setError(
+          clientError.message ||
+            "Failed to initialize authentication. Please check your .env.local file and ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set."
+        );
+        setIsLoading(false);
+        return;
+      }
+
+      // Validate Supabase client is properly initialized
+      if (!supabase) {
+        setError(
+          "Failed to initialize authentication. Please check your configuration."
+        );
+        setIsLoading(false);
+        return;
+      }
 
       // Sign up the user
       const { data: authData, error: signUpError } = await supabase.auth.signUp(
@@ -68,7 +87,14 @@ export default function SignupPage() {
       );
 
       if (signUpError) {
-        setError(signUpError.message);
+        // Provide more helpful error messages
+        if (signUpError.message.includes("fetch")) {
+          setError(
+            "Unable to connect to the server. Please check your internet connection and ensure your Supabase credentials are correct in .env.local"
+          );
+        } else {
+          setError(signUpError.message);
+        }
         setIsLoading(false);
         return;
       }
@@ -80,31 +106,68 @@ export default function SignupPage() {
       }
 
       // Create user profile in the profiles table
-      // Note: This assumes you have a profiles table with RLS policies
+      // Note: The profile might already exist if created by a database trigger
       try {
-        const { error: profileError } = await supabase.from("profiles").insert({
-          id: authData.user.id,
-          username: username.toLowerCase(),
-          name,
-          email,
-        });
+        // First, check if profile already exists (created by trigger)
+        const { data: existingProfile } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("id", authData.user.id)
+          .single();
 
-        if (profileError) {
-          // If profile creation fails, we still have the auth user
-          // The profile might be created via a database trigger
-          console.error("Profile creation error:", {
-            message: profileError.message,
-            details: profileError.details,
-            hint: profileError.hint,
-            code: profileError.code,
-          });
-          // Don't fail the signup if profile creation fails
-          // The user can update their profile later
+        if (!existingProfile) {
+          // Profile doesn't exist, try to create it
+          const { error: profileError } = await supabase
+            .from("profiles")
+            .insert({
+              id: authData.user.id,
+              username: username.toLowerCase(),
+              name,
+              email,
+            });
+
+          if (profileError) {
+            // Check if it's a duplicate key error (profile was created between check and insert)
+            if (
+              profileError.code === "23505" ||
+              profileError.message?.includes("duplicate")
+            ) {
+              // Profile already exists (likely created by trigger), this is fine
+              console.log("Profile already exists, skipping creation");
+            } else {
+              // Other error - log it but don't fail signup
+              console.error("Profile creation error:", {
+                message: profileError.message,
+                details: profileError.details,
+                hint: profileError.hint,
+                code: profileError.code,
+              });
+            }
+          }
+        } else {
+          // Profile already exists (created by trigger), update it with the provided data
+          const { error: updateError } = await supabase
+            .from("profiles")
+            .update({
+              username: username.toLowerCase(),
+              name,
+              email,
+            })
+            .eq("id", authData.user.id);
+
+          if (updateError) {
+            console.error("Profile update error:", {
+              message: updateError.message,
+              details: updateError.details,
+              hint: updateError.hint,
+              code: updateError.code,
+            });
+          }
         }
       } catch (profileErr) {
         // Handle case where profiles table might not exist or other errors
-        console.error("Profile creation failed:", profileErr);
-        // Continue with signup - profile can be created later
+        console.error("Profile operation failed:", profileErr);
+        // Continue with signup - profile can be created/updated later
       }
 
       // Redirect to home page
