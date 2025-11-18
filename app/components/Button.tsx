@@ -48,9 +48,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     // Size styles
     const sizes = {
-      sm: "px-3 py-1.5 text-sm",
-      md: "px-4 py-2.5 text-sm",
-      lg: "px-6 py-3 text-base",
+      sm: "px-3 py-1.5 text-sm gap-2",
+      md: "px-4 py-2.5 text-sm gap-2.5",
+      lg: "px-6 py-3 text-base gap-3",
     };
 
     // Color styles for fill variant

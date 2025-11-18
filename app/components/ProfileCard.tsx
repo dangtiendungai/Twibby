@@ -168,6 +168,7 @@ export default function ProfileCard({
               color="gray"
               rounded="full"
               className="font-semibold"
+              onClick={() => router.push("/settings")}
             >
               Edit Profile
             </Button>

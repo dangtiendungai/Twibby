@@ -1,8 +1,8 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import ProfileCard from "../../components/ProfileCard";
-import Tweet from "../../components/Tweet";
-import Button from "../../components/Button";
+import ProfileTabs from "../../components/ProfileTabs";
+import TweetsList from "../../components/TweetsList";
 import { createClient } from "@/lib/supabase/server";
 import { fetchProfileMap } from "@/lib/supabase/profile-helpers";
 
@@ -54,38 +54,31 @@ async function getCurrentUserProfile() {
 }
 
 async function getUserTweets(userId: string) {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user: currentUser },
-    } = await supabase.auth.getUser();
+  const supabase = await createClient();
+  const {
+    data: { user: currentUser },
+  } = await supabase.auth.getUser();
 
-    // Fetch user's tweets
+  try {
+    // Fetch user's tweets directly
     const { data: tweets, error } = await supabase
       .from("tweets")
-      .select(
-        `
-        id,
-        content,
-        created_at,
-        user_id,
-        image_url
-      `
-      )
+      .select("id, content, created_at, user_id, image_url")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(50);
 
-    if (error || !tweets) {
+    if (error || !tweets || tweets.length === 0) {
       return [];
     }
 
+    // Use shared helper to get tweet details (profiles, likes, etc.)
+    // We need to pass the tweets we already fetched
     const profileMap = await fetchProfileMap(
       supabase,
       tweets.map((t) => t.user_id)
     );
 
-    // Get like counts and check if user has liked each tweet
     const tweetIds = tweets.map((t) => t.id);
 
     const { data: likesData } = await supabase
@@ -127,7 +120,7 @@ async function getUserTweets(userId: string) {
       };
     });
   } catch (error) {
-    console.error("Error fetching tweets:", error);
+    console.error("Error fetching user tweets:", error);
     return [];
   }
 }
@@ -159,65 +152,11 @@ async function ProfileContent() {
         following={profile.following}
         isOwnProfile={profile.isOwnProfile}
       />
-      <div className="border-b border-gray-200 dark:border-gray-800">
-        <div className="flex">
-          <Button
-            variant="text"
-            color="gray"
-            rounded="none"
-            className="flex-1 py-4 px-4 text-center font-semibold text-gray-900 dark:text-gray-100 border-b-2 border-blue-500"
-          >
-            Posts
-          </Button>
-          <Button
-            variant="text"
-            color="gray"
-            rounded="none"
-            className="flex-1 py-4 px-4 text-center font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900"
-          >
-            Replies
-          </Button>
-          <Button
-            variant="text"
-            color="gray"
-            rounded="none"
-            className="flex-1 py-4 px-4 text-center font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900"
-          >
-            Media
-          </Button>
-          <Button
-            variant="text"
-            color="gray"
-            rounded="none"
-            className="flex-1 py-4 px-4 text-center font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900"
-          >
-            Likes
-          </Button>
-        </div>
-      </div>
-      <div>
-        {tweets.length === 0 ? (
-          <div className="p-8 text-center">
-            <p className="text-gray-500 dark:text-gray-400">
-              No tweets yet. Start posting!
-            </p>
-          </div>
-        ) : (
-          tweets.map((tweet) => (
-            <Tweet
-              key={tweet.id}
-              id={tweet.id}
-              content={tweet.content}
-              author={tweet.author}
-              createdAt={tweet.createdAt}
-              likes={tweet.likes}
-              isLiked={tweet.isLiked}
-              imageUrl={tweet.imageUrl}
-              userId={tweet.userId}
-            />
-          ))
-        )}
-      </div>
+      <ProfileTabs activeTab="posts" />
+      <TweetsList
+        tweets={tweets}
+        emptyMessage="No tweets yet. Start posting!"
+      />
     </>
   );
 }
