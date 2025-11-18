@@ -6,8 +6,16 @@ import Button from "../../../components/Button";
 import { createClient } from "@/lib/supabase/server";
 import { fetchProfileMap } from "@/lib/supabase/profile-helpers";
 
-async function getUserProfile(username: string) {
+export const dynamic = "force-dynamic";
+
+async function getUserProfile(username: string | undefined) {
   try {
+    if (!username) {
+      return null;
+    }
+
+    const normalizedUsername = username.toLowerCase();
+
     const supabase = await createClient();
     const {
       data: { user: currentUser },
@@ -17,8 +25,8 @@ async function getUserProfile(username: string) {
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("*")
-      .eq("username", username.toLowerCase())
-      .single();
+      .eq("username", normalizedUsername)
+      .maybeSingle();
 
     if (profileError || !profile) {
       return null;
@@ -39,11 +47,11 @@ async function getUserProfile(username: string) {
     let isFollowing = false;
     if (currentUser) {
       const { data: followData } = await supabase
-        .from("follows")
+        .from("follows")  
         .select("id")
         .eq("follower_id", currentUser.id)
         .eq("following_id", profile.id)
-        .single();
+        .maybeSingle();
 
       isFollowing = !!followData;
     }
@@ -203,16 +211,16 @@ async function UserProfileContent({ username }: { username: string }) {
           </div>
         ) : (
           tweets.map((tweet) => (
-          <Tweet
-            key={tweet.id}
-            id={tweet.id}
-            content={tweet.content}
-            author={tweet.author}
-            createdAt={tweet.createdAt}
-            likes={tweet.likes}
-            isLiked={tweet.isLiked}
-            imageUrl={tweet.imageUrl}
-          />
+            <Tweet
+              key={tweet.id}
+              id={tweet.id}
+              content={tweet.content}
+              author={tweet.author}
+              createdAt={tweet.createdAt}
+              likes={tweet.likes}
+              isLiked={tweet.isLiked}
+              imageUrl={tweet.imageUrl}
+            />
           ))
         )}
       </div>
@@ -221,12 +229,19 @@ async function UserProfileContent({ username }: { username: string }) {
 }
 
 interface UserProfilePageProps {
-  params: {
-    username: string;
-  };
+  params: Promise<{
+    username?: string;
+  }>;
 }
 
-export default function UserProfilePage({ params }: UserProfilePageProps) {
+export default async function UserProfilePage({
+  params,
+}: UserProfilePageProps) {
+  const { username } = await params;
+
+  if (!username) {
+    notFound();
+  }
   return (
     <>
       <main className="flex-1 border-x border-gray-200 dark:border-gray-800 min-w-0">
@@ -240,7 +255,7 @@ export default function UserProfilePage({ params }: UserProfilePageProps) {
             </div>
           }
         >
-          <UserProfileContent username={params.username} />
+          <UserProfileContent username={username} />
         </Suspense>
       </main>
     </>
