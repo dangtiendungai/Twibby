@@ -32,10 +32,14 @@ export default function TwoFactorVerifyDialog({
     setIsLoading(true);
     try {
       await onVerify(verificationCode);
+      // Success - code will be cleared and dialog closed by parent
       setVerificationCode("");
     } catch (err: any) {
+      // Show error but keep dialog open for retry
       setError(err.message || "Invalid verification code");
       setIsLoading(false);
+      // Clear the code input so user can try again
+      setVerificationCode("");
     }
   };
 

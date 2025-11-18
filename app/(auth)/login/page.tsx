@@ -39,10 +39,15 @@ export default function LoginPage() {
         return;
       }
 
-      // After successful password login, check if 2FA is enabled
-      // We can now use the authenticated session to check 2FA status
+      // After successful password login, wait a bit for session to be established
+      // then check if 2FA is enabled
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       try {
-        const statusResponse = await fetch("/api/2fa/status");
+        const statusResponse = await fetch("/api/2fa/status", {
+          credentials: "include", // Ensure cookies are sent
+        });
+        
         if (!statusResponse.ok) {
           // If status check fails, proceed without 2FA (fallback)
           router.push("/");
@@ -76,34 +81,29 @@ export default function LoginPage() {
   };
 
   const handle2FAVerify = async (code: string) => {
-    try {
-      // Verify the 2FA code (user is already authenticated from password login)
-      const verifyResponse = await fetch("/api/2fa/verify", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ code }),
-      });
+    // Verify the 2FA code (user is already authenticated from password login)
+    const verifyResponse = await fetch("/api/2fa/verify", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include", // Ensure cookies are sent
+      body: JSON.stringify({ code }),
+    });
 
-      const verifyData = await verifyResponse.json();
+    const verifyData = await verifyResponse.json();
 
-      if (!verifyResponse.ok) {
-        throw new Error(verifyData.error || "Invalid verification code");
-      }
-
-      // 2FA verified successfully, the session is already active from the password login
-      setShow2FA(false);
-      setPendingEmail("");
-      setPendingPassword("");
-      router.push("/");
-      router.refresh();
-    } catch (err: any) {
-      // If 2FA verification fails, sign out the user
-      const supabase = createClient();
-      await supabase.auth.signOut();
-      throw err;
+    if (!verifyResponse.ok) {
+      // Don't sign out on verification failure - allow retry
+      throw new Error(verifyData.error || "Invalid verification code");
     }
+
+    // 2FA verified successfully, the session is already active from the password login
+    setShow2FA(false);
+    setPendingEmail("");
+    setPendingPassword("");
+    router.push("/");
+    router.refresh();
   };
 
   const handle2FAClose = async () => {
