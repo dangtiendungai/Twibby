@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { toast } from "react-toastify";
 import { createClient } from "@/lib/supabase/client";
 import Button from "./Button";
 import { Upload, X, Loader2 } from "lucide-react";
@@ -127,9 +128,13 @@ export default function AvatarUploader({
 
       setPreview(publicUrl);
       onUploadComplete?.(publicUrl);
+      toast.success("Avatar uploaded successfully!");
     } catch (err: any) {
       console.error("Error uploading avatar:", err);
-      setError(err.message || "Failed to upload avatar. Please try again.");
+      const errorMessage =
+        err.message || "Failed to upload avatar. Please try again.";
+      setError(errorMessage);
+      toast.error(errorMessage);
       // Revert preview on error
       setPreview(currentAvatarUrl || null);
     } finally {
@@ -163,11 +168,11 @@ export default function AvatarUploader({
         const url = new URL(currentAvatarUrl);
         const pathParts = url.pathname.split("/");
         const avatarsIndex = pathParts.indexOf("avatars");
-        
+
         if (avatarsIndex !== -1 && avatarsIndex < pathParts.length - 1) {
           // Get the path after 'avatars' (e.g., 'avatars/userId/file.jpg' -> 'userId/file.jpg')
           const filePath = pathParts.slice(avatarsIndex + 1).join("/");
-          
+
           // Delete from storage
           await supabase.storage.from("avatars").remove([filePath]);
         }
@@ -189,9 +194,13 @@ export default function AvatarUploader({
 
       setPreview(null);
       onUploadComplete?.("");
+      toast.success("Avatar removed successfully!");
     } catch (err: any) {
       console.error("Error removing avatar:", err);
-      setError(err.message || "Failed to remove avatar. Please try again.");
+      const errorMessage =
+        err.message || "Failed to remove avatar. Please try again.";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsUploading(false);
     }

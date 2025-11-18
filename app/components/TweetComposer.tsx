@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 import { createClient } from "@/lib/supabase/client";
 import Button from "./Button";
 import type { User } from "@supabase/supabase-js";
@@ -70,7 +71,9 @@ export default function TweetComposer({ onTweetCreated }: TweetComposerProps) {
         error: userError,
       } = await supabase.auth.getUser();
       if (userError || !user) {
-        setError("You must be logged in to post");
+        const errorMsg = "You must be logged in to post";
+        setError(errorMsg);
+        toast.error(errorMsg);
         setIsLoading(false);
         return;
       }
@@ -83,7 +86,9 @@ export default function TweetComposer({ onTweetCreated }: TweetComposerProps) {
 
       if (tweetError) {
         console.error("Error creating tweet:", tweetError);
-        setError("Failed to post tweet. Please try again.");
+        const errorMsg = "Failed to post tweet. Please try again.";
+        setError(errorMsg);
+        toast.error(errorMsg);
         setIsLoading(false);
         return;
       }
@@ -93,9 +98,12 @@ export default function TweetComposer({ onTweetCreated }: TweetComposerProps) {
       setIsLoading(false);
       onTweetCreated?.();
       router.refresh();
+      toast.success("Tweet posted successfully!");
     } catch (err) {
       console.error("Error creating tweet:", err);
-      setError("An unexpected error occurred");
+      const errorMsg = "An unexpected error occurred";
+      setError(errorMsg);
+      toast.error(errorMsg);
       setIsLoading(false);
     }
   };

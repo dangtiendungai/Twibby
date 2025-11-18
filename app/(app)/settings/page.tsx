@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 import { createClient } from "@/lib/supabase/client";
 import Button from "../../components/Button";
 import TextField from "../../components/TextField";
@@ -91,7 +92,7 @@ export default function SettingsPage() {
 
       if (error) {
         console.error("Error updating profile:", error);
-        alert("Failed to update profile. Please try again.");
+        toast.error("Failed to update profile. Please try again.");
         return;
       }
 
@@ -102,10 +103,10 @@ export default function SettingsPage() {
       });
 
       router.refresh();
-      alert("Profile updated successfully!");
+      toast.success("Profile updated successfully!");
     } catch (error) {
       console.error("Error saving profile:", error);
-      alert("Failed to update profile. Please try again.");
+      toast.error("Failed to update profile. Please try again.");
     } finally {
       setIsSaving(false);
     }
