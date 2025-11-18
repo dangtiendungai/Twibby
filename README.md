@@ -32,12 +32,14 @@ Twibby is a modern social media platform built with Next.js and Supabase, inspir
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <your-repo-url>
 cd Twibby
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
@@ -45,19 +47,22 @@ npm install
 3. Set up environment variables:
    - Copy `.env.example` to `.env.local`
    - Fill in your Supabase credentials:
+
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-   You can find these values in your Supabase project settings (Settings → API).
+You can find these values in your Supabase project settings (Settings → API).
 
 4. Set up the database:
+
    - Open your Supabase dashboard
    - Go to SQL Editor
    - Run the SQL script below to create the required tables
 
 5. Run the development server:
+
 ```bash
 npm run dev
 ```
@@ -69,6 +74,7 @@ npm run dev
 ### Step 1: Create All Tables
 
 Run the SQL script in `supabase/schema.sql` in your Supabase SQL Editor. This will create:
+
 - `profiles` table (user profiles)
 - `tweets` table (posts/tweets)
 - `likes` table (tweet likes)
@@ -201,14 +207,23 @@ lib/
 
 After creating the database schema, you can seed it with mock data:
 
-### Option 1: Using the TypeScript Seed Script
+### Option 1: Using the TypeScript Seed Script (recommended)
 
-1. Create at least one user account through the signup page
-2. Update `supabase/seed.ts` with your test user emails
-3. Set `SUPABASE_SERVICE_ROLE_KEY` in your environment (get it from Supabase Dashboard → Settings → API)
-4. Run: `npx tsx supabase/seed.ts`
+This script programmatically creates mock users (defaults to 50) and tweets (defaults to 200), along with likes, follows, and bookmarks.
 
-### Option 2: Using SQL
+> ⚠️ The script requires your **Supabase service role key**. **Never commit or share this key.**
+
+1. Ensure you have `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` available
+2. The script automatically tries to read `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` from `.env.local` or `.env`. You can also inline them when running.
+3. Run the script (you can override counts with `SEED_USER_COUNT` and `SEED_TWEET_COUNT`):
+   ```bash
+   SUPABASE_SERVICE_ROLE_KEY=your_service_key \
+   NEXT_PUBLIC_SUPABASE_URL=your_url \
+   npx tsx supabase/seed.ts
+   ```
+4. After the script runs you can log in with any generated account: `username@twibby.dev` / `Password123!<index>`
+
+### Option 2: Using SQL (manual)
 
 1. Create test users through the signup page
 2. Get their user IDs from `auth.users` table
