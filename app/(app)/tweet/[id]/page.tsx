@@ -1,45 +1,8 @@
-import Sidebar from "../../../components/Sidebar";
+import { Suspense } from "react";
+import { notFound } from "next/navigation";
 import Tweet from "../../../components/Tweet";
 import TweetComposer from "../../../components/TweetComposer";
-
-// Mock data - will be replaced with Supabase data later
-const mockTweet = {
-  id: "1",
-  content:
-    "Just launched my new project! Excited to share it with everyone. 🚀",
-  author: {
-    username: "johndoe",
-    name: "John Doe",
-  },
-  createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-  likes: 42,
-  isLiked: false,
-};
-
-const mockReplies = [
-  {
-    id: "reply-1",
-    content: "Congratulations! This looks amazing! 🎉",
-    author: {
-      username: "janedoe",
-      name: "Jane Doe",
-    },
-    createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-    likes: 12,
-    isLiked: false,
-  },
-  {
-    id: "reply-2",
-    content: "Can't wait to try it out!",
-    author: {
-      username: "devmaster",
-      name: "Dev Master",
-    },
-    createdAt: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-    likes: 5,
-    isLiked: true,
-  },
-];
+import { createClient } from "@/lib/supabase/server";
 
 interface TweetPageProps {
   params: {
@@ -47,49 +10,129 @@ interface TweetPageProps {
   };
 }
 
-export default function TweetPage({ params }: TweetPageProps) {
+type TweetWithProfile = {
+  id: string;
+  content: string;
+  created_at: string;
+  user_id: string;
+  image_url: string | null;
+  profiles: {
+    username: string | null;
+    name: string | null;
+    avatar_url: string | null;
+  } | null;
+};
+
+async function getTweet(tweetId: string) {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user: currentUser },
+    } = await supabase.auth.getUser();
+
+    const { data: tweet, error } = await supabase
+      .from("tweets")
+      .select(
+        `
+        id,
+        content,
+        created_at,
+        user_id,
+        image_url,
+        profiles (
+          username,
+          name,
+          avatar_url
+        )
+      `
+      )
+      .eq("id", tweetId)
+      .single<TweetWithProfile>();
+
+    if (error || !tweet) {
+      return null;
+    }
+
+    const { count: likesCount } = await supabase
+      .from("likes")
+      .select("*", { count: "exact", head: true })
+      .eq("tweet_id", tweetId);
+
+    let isLiked = false;
+    if (currentUser) {
+      const { data: userLike } = await supabase
+        .from("likes")
+        .select("id")
+        .eq("tweet_id", tweetId)
+        .eq("user_id", currentUser.id)
+        .maybeSingle();
+      isLiked = Boolean(userLike);
+    }
+
+    return {
+      id: tweet.id,
+      content: tweet.content,
+      createdAt: tweet.created_at,
+      likes: likesCount || 0,
+      isLiked,
+      imageUrl: tweet.image_url,
+      author: {
+        username: tweet.profiles?.username || "unknown",
+        name: tweet.profiles?.name || "Unknown User",
+        avatar: tweet.profiles?.avatar_url || undefined,
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching tweet:", error);
+    return null;
+  }
+}
+
+async function TweetContent({ tweetId }: { tweetId: string }) {
+  const tweet = await getTweet(tweetId);
+
+  if (!tweet) {
+    notFound();
+  }
+
   return (
     <>
-      <main className="flex-1 border-x border-gray-200 dark:border-gray-800 min-w-0">
-        <div className="sticky top-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 px-4 py-4 z-10">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-            Tweet
-          </h2>
-        </div>
-
-        <div>
-          <Tweet
-            id={mockTweet.id}
-            content={mockTweet.content}
-            author={mockTweet.author}
-            createdAt={mockTweet.createdAt}
-            likes={mockTweet.likes}
-            isLiked={mockTweet.isLiked}
-          />
-
-          <div className="border-b border-gray-200 dark:border-gray-800 p-4">
-            <TweetComposer />
-          </div>
-
-          <div>
-            {mockReplies.map((reply) => (
-              <div
-                key={reply.id}
-                className="pl-4 border-l-2 border-gray-200 dark:border-gray-800 ml-4"
-              >
-                <Tweet
-                  id={reply.id}
-                  content={reply.content}
-                  author={reply.author}
-                  createdAt={reply.createdAt}
-                  likes={reply.likes}
-                  isLiked={reply.isLiked}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      </main>
+      <Tweet
+        id={tweet.id}
+        content={tweet.content}
+        author={tweet.author}
+        createdAt={tweet.createdAt}
+        likes={tweet.likes}
+        isLiked={tweet.isLiked}
+        imageUrl={tweet.imageUrl}
+      />
+      <div className="border-b border-gray-200 dark:border-gray-800 p-4">
+        <TweetComposer />
+      </div>
     </>
+  );
+}
+
+export default function TweetPage({ params }: TweetPageProps) {
+  return (
+    <main className="flex-1 border-x border-gray-200 dark:border-gray-800 min-w-0">
+      <div className="sticky top-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 px-4 py-4 z-10">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+          Tweet
+        </h2>
+      </div>
+      <Suspense
+        fallback={
+          <div className="p-8 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+            <p className="mt-4 text-gray-600 dark:text-gray-400">
+              Loading tweet...
+            </p>
+          </div>
+        }
+      >
+        <TweetContent tweetId={params.id} />
+      </Suspense>
+    </main>
   );
 }
