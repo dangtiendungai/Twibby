@@ -10,6 +10,7 @@ import Checkbox from "../../components/Checkbox";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import AvatarUploader from "../../components/AvatarUploader";
 import BannerUploader from "../../components/BannerUploader";
+import ChangePasswordDialog from "../../components/ChangePasswordDialog";
 import type { User } from "@supabase/supabase-js";
 
 interface Profile {
@@ -30,6 +31,8 @@ export default function SettingsPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isChangePasswordDialogOpen, setIsChangePasswordDialogOpen] =
+    useState(false);
 
   useEffect(() => {
     async function loadProfile() {
@@ -326,10 +329,14 @@ export default function SettingsPage() {
               Security
             </h3>
             <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6 space-y-4">
-              <Button variant="outline" fullWidth>
+              <Button
+                variant="outline"
+                fullWidth
+                onClick={() => setIsChangePasswordDialogOpen(true)}
+              >
                 Change password
               </Button>
-              <Button variant="outline" fullWidth>
+              <Button variant="outline" fullWidth disabled>
                 Two-factor authentication
               </Button>
             </div>
@@ -379,6 +386,11 @@ export default function SettingsPage() {
         cancelText="Cancel"
         variant="danger"
         isLoading={isDeleting}
+      />
+
+      <ChangePasswordDialog
+        isOpen={isChangePasswordDialogOpen}
+        onClose={() => setIsChangePasswordDialogOpen(false)}
       />
     </>
   );
