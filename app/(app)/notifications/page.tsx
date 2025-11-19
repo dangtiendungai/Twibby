@@ -3,6 +3,7 @@ import Link from "next/link";
 import Button from "../../components/ui/Button";
 import { createClient } from "@/lib/supabase/server";
 import { fetchProfileMap } from "@/lib/supabase/profile-helpers";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +31,7 @@ async function getNotifications(): Promise<Notification[]> {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return [];
+      redirect("/login");
     }
 
     const notifications: Notification[] = [];

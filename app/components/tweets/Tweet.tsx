@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { toast } from "react-toastify";
 import {
   Heart,
   MessageCircle,
@@ -99,6 +100,7 @@ export default function Tweet({
         setLiked(!newLiked);
         setLikeCount((prev) => (!newLiked ? prev + 1 : prev - 1));
         setIsLiking(false);
+        toast.info("Please sign in to like tweets.");
         return;
       }
 

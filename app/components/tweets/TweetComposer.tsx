@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import Button from "../ui/Button";
 import { Image as ImageIcon, X, Loader2 } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
+import Link from "next/link";
 
 interface TweetComposerProps {
   onTweetCreated?: () => void;
@@ -30,6 +31,7 @@ export default function TweetComposer({ onTweetCreated }: TweetComposerProps) {
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const maxLength = 1500;
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
     async function loadUserProfile() {
@@ -54,11 +56,49 @@ export default function TweetComposer({ onTweetCreated }: TweetComposerProps) {
         }
       } catch (err) {
         console.error("Error loading user profile:", err);
+      } finally {
+        setAuthChecked(true);
       }
     }
 
     loadUserProfile();
   }, []);
+
+  if (!authChecked) {
+    return (
+      <div className="border-b border-gray-200 dark:border-gray-800 p-4">
+        <div className="h-16 bg-gray-100 dark:bg-gray-800 rounded-2xl animate-pulse" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="border-b border-gray-200 dark:border-gray-800 p-6 text-center space-y-4">
+        <p className="text-gray-700 dark:text-gray-300 text-lg font-medium">
+          Sign in to join the conversation
+        </p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Browse tweets freely. Log in or create an account to post, like, or
+          bookmark.
+        </p>
+        <div className="flex flex-col sm:flex-row justify-center gap-3">
+          <Link
+            href="/login"
+            className="px-5 py-2 rounded-full bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors"
+          >
+            Log in
+          </Link>
+          <Link
+            href="/signup"
+            className="px-5 py-2 rounded-full border border-blue-600 text-blue-600 font-semibold hover:bg-blue-50 dark:hover:bg-blue-950 transition-colors"
+          >
+            Create account
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

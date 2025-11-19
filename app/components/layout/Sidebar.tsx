@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { toast } from "react-toastify";
 import {
   Home,
   Search,
@@ -21,13 +22,13 @@ import Button from "../ui/Button";
 import PostDialog from "../dialogs/PostDialog";
 
 const navigation = [
-  { name: "Home", href: "/", icon: Home },
-  { name: "Explore", href: "/explore", icon: Hash },
-  { name: "Search", href: "/search", icon: Search },
-  { name: "Notifications", href: "/notifications", icon: Bell },
-  { name: "Bookmarks", href: "/bookmarks", icon: Bookmark },
-  { name: "Profile", href: "/profile", icon: UserIcon },
-  { name: "Settings", href: "/settings", icon: Settings },
+  { name: "Home", href: "/", icon: Home, requiresAuth: false },
+  { name: "Explore", href: "/explore", icon: Hash, requiresAuth: false },
+  { name: "Search", href: "/search", icon: Search, requiresAuth: false },
+  { name: "Notifications", href: "/notifications", icon: Bell, requiresAuth: true },
+  { name: "Bookmarks", href: "/bookmarks", icon: Bookmark, requiresAuth: true },
+  { name: "Profile", href: "/profile", icon: UserIcon, requiresAuth: true },
+  { name: "Settings", href: "/settings", icon: Settings, requiresAuth: true },
 ];
 
 export default function Sidebar() {
@@ -95,6 +96,7 @@ export default function Sidebar() {
         <nav className="flex-1 space-y-2">
           {navigation.map((item) => {
             const isActive = pathname === item.href;
+            const isProtected = item.requiresAuth;
             return (
               <Link
                 key={item.name}
@@ -104,6 +106,12 @@ export default function Sidebar() {
                     ? "bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 font-semibold"
                     : "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
                 }`}
+                onClick={(e) => {
+                  if (isProtected && !user) {
+                    e.preventDefault();
+                    toast.info("Please sign in to access this page.");
+                  }
+                }}
               >
                 <item.icon className="w-6 h-6" />
                 <span className="text-base sm:text-lg hidden sm:inline">
