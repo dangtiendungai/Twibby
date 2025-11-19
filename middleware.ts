@@ -62,14 +62,26 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
-  const isAuthPage = pathname.startsWith("/login") || 
-                     pathname.startsWith("/signup") || 
-                     pathname.startsWith("/forgot-password") || 
-                     pathname.startsWith("/reset-password") ||
-                     pathname.startsWith("/auth");
-  const isPublicPath = pathname.startsWith("/_next") || 
-                       pathname.startsWith("/api") ||
-                       pathname.startsWith("/favicon");
+  const isAuthPage =
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/signup") ||
+    pathname.startsWith("/forgot-password") ||
+    pathname.startsWith("/reset-password") ||
+    pathname.startsWith("/auth");
+
+  const publicAppRoutes = ["/", "/explore", "/search"];
+  const isPublicAppRoute = publicAppRoutes.some((route) => {
+    if (route === "/") {
+      return pathname === "/";
+    }
+    return pathname === route || pathname.startsWith(`${route}/`);
+  });
+
+  const isPublicPath =
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/api") ||
+    pathname.startsWith("/favicon") ||
+    isPublicAppRoute;
 
   // Redirect authenticated users away from auth pages
   if (isAuthPage && user) {
