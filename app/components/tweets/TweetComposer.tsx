@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { createClient } from "@/lib/supabase/client";
 import Button from "../ui/Button";
+import { Image as ImageIcon, X, Loader2 } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 
 interface TweetComposerProps {
@@ -23,6 +24,11 @@ export default function TweetComposer({ onTweetCreated }: TweetComposerProps) {
   const [error, setError] = useState("");
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const maxLength = 1500;
 
   useEffect(() => {
@@ -54,9 +60,106 @@ export default function TweetComposer({ onTweetCreated }: TweetComposerProps) {
     loadUserProfile();
   }, []);
 
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size must be less than 5MB");
+      return;
+    }
+
+    setSelectedImage(file);
+    setError("");
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    // Auto-upload image (get user first if not available)
+    const supabase = createClient();
+    const {
+      data: { user: currentUser },
+    } = await supabase.auth.getUser();
+
+    if (!currentUser) {
+      toast.error("You must be logged in to upload images");
+      setSelectedImage(null);
+      setImagePreview(null);
+      return;
+    }
+
+    await uploadImage(file, currentUser.id);
+  };
+
+  const uploadImage = async (file: File, userId: string) => {
+    setIsUploadingImage(true);
+    try {
+      const supabase = createClient();
+
+      // Generate unique filename
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${userId}/tweets/${Date.now()}.${fileExt}`;
+
+      // Upload to Supabase Storage (using 'avatars' bucket or create a 'tweets' bucket)
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(fileName, file, {
+          cacheControl: "3600",
+          upsert: false,
+        });
+
+      if (uploadError) {
+        if (uploadError.message.includes("Bucket not found")) {
+          throw new Error(
+            "Storage bucket not configured. Please ensure the storage bucket exists."
+          );
+        }
+        throw uploadError;
+      }
+
+      // Get public URL
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("avatars").getPublicUrl(fileName);
+
+      setUploadedImageUrl(publicUrl);
+      toast.success("Image uploaded successfully!");
+    } catch (err: any) {
+      console.error("Error uploading image:", err);
+      const errorMessage =
+        err.message || "Failed to upload image. Please try again.";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      setSelectedImage(null);
+      setImagePreview(null);
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    setUploadedImageUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (content.trim().length === 0) return;
+    if (content.trim().length === 0 && !uploadedImageUrl) return;
     if (content.length > maxLength) return;
 
     setIsLoading(true);
@@ -78,10 +181,11 @@ export default function TweetComposer({ onTweetCreated }: TweetComposerProps) {
         return;
       }
 
-      // Create tweet
+      // Create tweet with image URL if available
       const { error: tweetError } = await supabase.from("tweets").insert({
         user_id: user.id,
         content: content.trim(),
+        image_url: uploadedImageUrl,
       });
 
       if (tweetError) {
@@ -93,8 +197,14 @@ export default function TweetComposer({ onTweetCreated }: TweetComposerProps) {
         return;
       }
 
-      // Success
+      // Success - reset form
       setContent("");
+      setSelectedImage(null);
+      setImagePreview(null);
+      setUploadedImageUrl(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
       setIsLoading(false);
       onTweetCreated?.();
       router.refresh();
@@ -142,20 +252,71 @@ export default function TweetComposer({ onTweetCreated }: TweetComposerProps) {
               placeholder="What's happening?"
               className="w-full resize-none border-none outline-none bg-transparent text-lg placeholder-gray-500 dark:placeholder-gray-400 min-h-[100px]"
               maxLength={maxLength}
-              disabled={isLoading}
+              disabled={isLoading || isUploadingImage}
             />
           </div>
         </div>
+
+        {/* Image Preview */}
+        {imagePreview && (
+          <div className="relative pl-16">
+            <div className="relative rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 max-w-md">
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="w-full h-auto max-h-96 object-contain"
+              />
+              {isUploadingImage && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                  <Loader2 className="w-8 h-8 text-white animate-spin" />
+                </div>
+              )}
+              {!isUploadingImage && (
+                <Button
+                  type="button"
+                  variant="icon"
+                  onClick={handleRemoveImage}
+                  className="absolute top-2 right-2 bg-black/70 hover:bg-black/90 text-white"
+                  rounded="full"
+                  aria-label="Remove image"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="flex items-center justify-between pl-16">
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            <span
-              className={
-                content.length > maxLength * 0.9 ? "text-orange-500" : ""
-              }
+          <div className="flex items-center gap-4">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageSelect}
+              className="hidden"
+              disabled={isLoading || isUploadingImage}
+            />
+            <Button
+              type="button"
+              variant="icon"
+              color="primary"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isLoading || isUploadingImage}
+              aria-label="Attach image"
             >
-              {content.length}
-            </span>
-            /{maxLength}
+              <ImageIcon className="w-5 h-5" />
+            </Button>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              <span
+                className={
+                  content.length > maxLength * 0.9 ? "text-orange-500" : ""
+                }
+              >
+                {content.length}
+              </span>
+              /{maxLength}
+            </div>
           </div>
           <Button
             type="submit"
@@ -163,11 +324,12 @@ export default function TweetComposer({ onTweetCreated }: TweetComposerProps) {
             color="primary"
             rounded="full"
             disabled={
-              content.trim().length === 0 ||
+              (content.trim().length === 0 && !uploadedImageUrl) ||
               content.length > maxLength ||
-              isLoading
+              isLoading ||
+              isUploadingImage
             }
-            isLoading={isLoading}
+            isLoading={isLoading || isUploadingImage}
             className="font-semibold"
           >
             Post

@@ -269,18 +269,22 @@ export default function Tweet({
                           }}
                         />
                         <div className="absolute right-0 top-8 z-20 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 min-w-[120px]">
-                          <button
+                          <Button
+                            variant="text"
+                            color="danger"
+                            fullWidth
+                            size="sm"
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
                               setShowMenu(false);
                               setShowDeleteDialog(true);
                             }}
-                            className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 flex items-center gap-2"
+                            className="justify-start"
                           >
                             <Trash2 className="w-4 h-4" />
                             Delete
-                          </button>
+                          </Button>
                         </div>
                       </>
                     )}
