@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import Button from "../ui/Button";
 
@@ -190,18 +191,24 @@ export default function ProfileCard({
           </p>
         )}
         <div className="flex gap-4 text-sm text-gray-500 dark:text-gray-400 mb-2">
-          <span>
+          <Link
+            href={`/user/${username}/following`}
+            className="hover:underline"
+          >
             <span className="font-semibold text-gray-900 dark:text-gray-100">
               {following}
             </span>{" "}
             Following
-          </span>
-          <span>
+          </Link>
+          <Link
+            href={`/user/${username}/followers`}
+            className="hover:underline"
+          >
             <span className="font-semibold text-gray-900 dark:text-gray-100">
               {followersCount}
             </span>{" "}
             Followers
-          </span>
+          </Link>
         </div>
         <p className="text-sm text-gray-500 dark:text-gray-400">
           Joined {formatDate(joinedDate)}
